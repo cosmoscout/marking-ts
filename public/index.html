@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: linear-gradient(336deg, rgba(62, 57, 115, 0.8), rgba(62, 57, 115, 0) 60%),
+            linear-gradient(217deg, rgba(234, 171, 99, 1), rgba(234, 171, 99, 0) 70%),
+            linear-gradient(312deg, rgba(76, 140, 215, 0), rgba(76, 140, 215, 0.5) 80%),
+            linear-gradient(396deg, rgba(62, 57, 115, 0.8), rgba(62, 57, 115, 0) 55%);
+            background-size: cover;
+            overflow: hidden;
+        }
+
+        canvas[data-paper-resize] {
+            width: 100%;
+            height: 100%;
+        }
+
+    </style>
+    <script src="https://unpkg.com/lodash"></script>
+    <script src="https://unpkg.com/paper"></script>
+
+</head>
+<body>
+
+<script>
+    const bg1 = 'linear-gradient(336deg, rgba(62, 57, 115, 0.8), rgba(62, 57, 115, 0) 60%),\n' +
+        '            linear-gradient(217deg, rgba(234, 171, 99, 1), rgba(234, 171, 99, 0) 70%),\n' +
+        '            linear-gradient(312deg, rgba(76, 140, 215, 0), rgba(76, 140, 215, 0.5) 80%),\n' +
+        '            linear-gradient(396deg, rgba(62, 57, 115, 0.8), rgba(62, 57, 115, 0) 55%)';
+
+    const bg = 'linear-gradient(135deg, rgba(74,159,158,1) 0%, rgba(94,195,157,0.6) 25%, rgba(159,226,136,0.4) 50%, transparent),\n' +
+        '                                linear-gradient(225deg, rgba(249,248,113,1) 0%, rgba(159,226,136,0.6) 25%, rgba(94,195,157,0.4) 50%, transparent),\n' +
+        '                                linear-gradient(45deg, rgba(233,29,29,1) , rgba(215,0,96,0.6) , rgba(165,52,136,0.4) , transparent)';
+
+    window.onload = () => {
+
+        const menu = new MarkingTS.Menu('body', {
+            main: {
+                animationDuration: 200,
+                enableMaxClickRadius: true
+            },
+            geometry: {
+                stroke: {
+                    enabled: true
+                }
+            }
+        });
+
+        const struct = {
+            id: 'Root',
+            text: 'Hauptmenü',
+            direction: 0,
+            icon: 'bars',
+            children: [
+                {
+                    id: 'file',
+                    text: 'Datei',
+                    icon: 'file',
+                    direction: 0,
+                    type: 'slider',
+                },
+                {
+                    id: 'tools',
+                    text: 'Werkzeuge',
+                    icon: 'tools',
+                    direction: 45,
+                    children: [
+                        {
+                            id: 't1',
+                            text: 'Word',
+                            icon: 'file-word',
+                            direction: 0
+                        },
+                        {
+                            id: 't2',
+                            text: 'Excel',
+                            icon: 'file-excel',
+                            direction: 90
+                        },
+                        {
+                            id: 't3',
+                            text: 'PowerPoint',
+                            icon: 'file-powerpoint',
+                            direction: 180
+                        },
+                        {
+                            id: 't4',
+                            text: 'Access',
+                            icon: 'file-csv',
+                            direction: 270
+                        }
+                    ]
+                },
+                {
+                    id: 'project',
+                    text: 'Projekt',
+                    icon: 'project-diagram',
+                    direction: 90,
+                    children: [
+                        {
+                            id: 'p1',
+                            text: 'Word',
+                            icon: 'file-word',
+                            direction: 45
+                        },
+                        {
+                            id: 'p2',
+                            text: 'Excel',
+                            icon: 'file-excel',
+                            direction: 135
+                        },
+                        {
+                            id: 'p3',
+                            text: 'PowerPoint',
+                            icon: 'file-powerpoint',
+                            direction: 225
+                        },
+                        {
+                            id: 'p4',
+                            text: 'Access',
+                            icon: 'file-csv',
+                            direction: 315
+                        }
+                    ]
+                },
+                {
+                    id: 'documents',
+                    text: 'Dokumente',
+                    icon: 'file-signature',
+                    direction: 135,
+                    children: [
+                        {
+                            id: 'documents-folder',
+                            text: 'Öffnen',
+                            icon: 'folder-open',
+                            direction: 60,
+
+                            children: [
+                                {
+                                    id: 'file',
+                                    text: 'Datei',
+                                    icon: 'file',
+                                    direction: 0,
+                                    children: [
+                                        {
+                                            id: 'word',
+                                            text: 'Word',
+                                            icon: 'file-word',
+                                            direction: 45
+                                        },
+                                        {
+                                            id: 'excel',
+                                            text: 'Excel',
+                                            icon: 'file-excel',
+                                            direction: 135
+                                        },
+                                        {
+                                            id: 'powerpoint',
+                                            text: 'PowerPoint',
+                                            icon: 'file-powerpoint',
+                                            direction: 225
+                                        },
+                                        {
+                                            id: 'access',
+                                            text: 'Access',
+                                            icon: 'file-csv',
+                                            direction: 315
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'tools',
+                                    text: 'Werkzeuge',
+                                    icon: 'tools',
+                                    direction: 45,
+                                    children: [
+                                        {
+                                            id: 't1',
+                                            text: 'Word',
+                                            icon: 'file-word',
+                                            direction: 0
+                                        },
+                                        {
+                                            id: 't2',
+                                            text: 'Excel',
+                                            icon: 'file-excel',
+                                            direction: 90
+                                        },
+                                        {
+                                            id: 't3',
+                                            text: 'PowerPoint',
+                                            icon: 'file-powerpoint',
+                                            direction: 180
+                                        },
+                                        {
+                                            id: 't4',
+                                            text: 'Access',
+                                            icon: 'file-csv',
+                                            direction: 270
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'project',
+                                    text: 'Projekt',
+                                    icon: 'project-diagram',
+                                    direction: 90,
+                                    children: [
+                                        {
+                                            id: 'p1',
+                                            text: 'Word',
+                                            icon: 'file-word',
+                                            direction: 45
+                                        },
+                                        {
+                                            id: 'p2',
+                                            text: 'Excel',
+                                            icon: 'file-excel',
+                                            direction: 135
+                                        },
+                                        {
+                                            id: 'p3',
+                                            text: 'PowerPoint',
+                                            icon: 'file-powerpoint',
+                                            direction: 225
+                                        },
+                                        {
+                                            id: 'p4',
+                                            text: 'Access',
+                                            icon: 'file-csv',
+                                            direction: 315
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'documents',
+                                    text: 'Dokumente',
+                                    icon: 'file-signature',
+                                    direction: 135,
+                                    children: [
+                                        {
+                                            id: 'documents-folder',
+                                            text: 'Öffnen',
+                                            icon: 'folder-open',
+                                            direction: 45
+                                        },
+                                        {
+                                            id: 'book-dead',
+                                            text: 'Nicht öffnen',
+                                            icon: 'book-dead',
+                                            direction: 225
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'help',
+                                    text: 'Hilfe',
+                                    icon: 'question',
+                                    direction: 180,
+                                    children: [
+                                        {
+                                            id: 'h1',
+                                            text: 'Word',
+                                            icon: 'file-word',
+                                            direction: 45,
+                                            children: [
+                                                {
+                                                    id: 'ghost',
+                                                    text: 'Child1',
+                                                    direction: 720,
+                                                    icon: 'ghost',
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 0,
+                                                            icon: 'grin-squint-tears',
+                                                            children: [
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 45,
+                                                                    icon: 'grin-squint-tears'
+                                                                },
+                                                                {
+                                                                    id: 'Child1.2',
+                                                                    text: 'Child1.2',
+                                                                    direction: 90,
+                                                                    icon: 'grin-squint-tears'
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 270,
+                                                                    icon: 'grin-squint-tears'
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            id: 'Child1.2',
+                                                            text: 'Child1.2',
+                                                            direction: 90,
+                                                            children: [
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 20
+                                                                },
+                                                                {
+                                                                    id: 'Child1.2',
+                                                                    text: 'Child1.2',
+                                                                    direction: 90
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 180
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 270,
+                                                            children: [
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 0
+                                                                },
+                                                                {
+                                                                    id: 'Child1.2',
+                                                                    text: 'Child1.2',
+                                                                    direction: 45
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 180
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 270
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 300
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'angle-right',
+                                                    text: 'Child2',
+                                                    direction: 45,
+                                                    icon: 'bell-slash',
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 0
+                                                        },
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 20
+                                                        },
+                                                        {
+                                                            id: 'bla',
+                                                            icon: 'bomb',
+                                                            text: 'Child1.2',
+                                                            direction: 90
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 270
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'angle-right',
+                                                    text: 'Child2',
+                                                    direction: 90,
+                                                    icon: 'angle-right',
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 0
+                                                        },
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 20
+                                                        },
+                                                        {
+                                                            id: 'bla',
+                                                            icon: 'bomb',
+                                                            text: 'Child1.2',
+                                                            direction: 90
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'Child3',
+                                                    text: 'Child2',
+                                                    direction: 150,
+                                                    icon: 'database',
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 45,
+                                                            icon: 'download'
+                                                        },
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 90,
+                                                            icon: 'inbox',
+                                                            children: [
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 45,
+                                                                    icon: 'download',
+                                                                    children: [
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 0,
+                                                                            icon: 'download',
+                                                                            children: [
+                                                                                {
+                                                                                    id: 'Child1.1',
+                                                                                    text: 'Child1.1',
+                                                                                    direction: 225,
+                                                                                    icon: 'download',
+                                                                                    children: [
+                                                                                        {
+                                                                                            id: 'Child1.1',
+                                                                                            text: 'Child1.1',
+                                                                                            direction: 90,
+                                                                                            icon: 'download',
+                                                                                            children: [
+                                                                                                {
+                                                                                                    id: 'Child1.1',
+                                                                                                    text: 'Child1.1',
+                                                                                                    direction: 0,
+                                                                                                    icon: 'download',
+                                                                                                    children: [
+                                                                                                        {
+                                                                                                            id: 'Child1.1',
+                                                                                                            text: 'Child1.1',
+                                                                                                            direction: 270,
+                                                                                                            icon: 'download'
+                                                                                                        }
+                                                                                                    ]
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 90,
+                                                                    icon: 'download',
+                                                                    children: [
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 90,
+                                                                            icon: 'download',
+                                                                            children: [
+                                                                                {
+                                                                                    id: 'Child1.1',
+                                                                                    text: 'Child1.1',
+                                                                                    direction: 90,
+                                                                                    icon: 'download',
+                                                                                    children: [
+                                                                                        {
+                                                                                            id: 'Child1.1',
+                                                                                            text: 'Child1.1',
+                                                                                            direction: 0,
+                                                                                            icon: 'download',
+                                                                                            children: [
+                                                                                                {
+                                                                                                    id: 'Child1.1',
+                                                                                                    text: 'Child1.1',
+                                                                                                    direction: 0,
+                                                                                                    icon: 'download',
+                                                                                                    children: [
+                                                                                                        {
+                                                                                                            id: 'Child1.1',
+                                                                                                            text: 'Child1.1',
+                                                                                                            direction: 0,
+                                                                                                            icon: 'download',
+                                                                                                            children: [
+                                                                                                                {
+                                                                                                                    id: 'Child1.1',
+                                                                                                                    text: 'Child1.1',
+                                                                                                                    direction: 0,
+                                                                                                                    icon: 'download',
+                                                                                                                    children: [
+                                                                                                                        {
+                                                                                                                            id: 'Child1.1',
+                                                                                                                            text: 'Child1.1',
+                                                                                                                            direction: 0,
+                                                                                                                            icon: 'download',
+                                                                                                                            children: [
+                                                                                                                                {
+                                                                                                                                    id: 'Child1.1',
+                                                                                                                                    text: 'Child1.1',
+                                                                                                                                    direction: 0,
+                                                                                                                                    icon: 'download',
+                                                                                                                                    children: [
+                                                                                                                                        {
+                                                                                                                                            id: 'Child1.1',
+                                                                                                                                            text: 'Child1.1',
+                                                                                                                                            direction: 270,
+                                                                                                                                            icon: 'download',
+                                                                                                                                            children: [
+                                                                                                                                                {
+                                                                                                                                                    id: 'Child1.1',
+                                                                                                                                                    text: 'Child1.1',
+                                                                                                                                                    direction: 270,
+                                                                                                                                                    icon: 'download',
+                                                                                                                                                    children: [
+                                                                                                                                                        {
+                                                                                                                                                            id: 'Child1.1',
+                                                                                                                                                            text: 'Child1.1',
+                                                                                                                                                            direction: 270,
+                                                                                                                                                            icon: 'download',
+                                                                                                                                                            children: [
+                                                                                                                                                                {
+                                                                                                                                                                    id: 'Child1.1',
+                                                                                                                                                                    text: 'Child1.1',
+                                                                                                                                                                    direction: 270,
+                                                                                                                                                                    icon: 'download'
+                                                                                                                                                                }
+                                                                                                                                                            ]
+                                                                                                                                                        }
+                                                                                                                                                    ]
+                                                                                                                                                }
+                                                                                                                                            ]
+                                                                                                                                        }
+                                                                                                                                    ]
+                                                                                                                                }
+                                                                                                                            ]
+                                                                                                                        }
+                                                                                                                    ]
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        }
+                                                                                                    ]
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            id: 'Child1.2',
+                                                            text: 'Child1.2',
+                                                            direction: 135,
+                                                            icon: 'paper-plane',
+                                                            children: [
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 45
+                                                                },
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 90
+                                                                },
+                                                                {
+                                                                    id: 'Child1.2',
+                                                                    text: 'Child1.2',
+                                                                    direction: 135
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 180
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 225
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 270
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            id: '1Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 180,
+                                                            icon: 'laptop',
+                                                            children: [
+                                                                {
+                                                                    id: 'c45',
+                                                                    text: 'Child1.1',
+                                                                    direction: 45,
+                                                                    children: [
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 45
+                                                                        },
+                                                                        {
+                                                                            id: 'c90solo',
+                                                                            text: 'Child1.1',
+                                                                            direction: 90
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.2',
+                                                                            text: 'Child1.2',
+                                                                            direction: 135
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 180
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 270
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 315
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 90
+                                                                },
+                                                                {
+                                                                    id: 'Child1.2',
+                                                                    text: 'Child1.2',
+                                                                    direction: 135
+                                                                },
+                                                                {
+                                                                    id: 'atm',
+                                                                    text: 'Child1.3',
+                                                                    direction: 180,
+                                                                    icon: 'atom',
+                                                                    children: [
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 45
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 90
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.2',
+                                                                            text: 'Child1.2',
+                                                                            direction: 135
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 180
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 225
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 270
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 315
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 225
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 270
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 315
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 225,
+                                                            icon: 'upload'
+                                                        },
+                                                        {
+                                                            id: 'wifi',
+                                                            text: 'Child1.3',
+                                                            direction: 270,
+                                                            icon: 'wifi'
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 315,
+                                                            icon: 'save'
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'Child3',
+                                                    text: 'Child2',
+                                                    direction: 180,
+                                                    icon: 'circle-notch',
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 90
+                                                        },
+                                                        {
+                                                            id: 'Child1.2',
+                                                            text: 'Child1.2',
+                                                            direction: 135,
+                                                            children: [
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 45
+                                                                },
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 90
+                                                                },
+                                                                {
+                                                                    id: 'Child1.2',
+                                                                    text: 'Child1.2',
+                                                                    direction: 135
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 180
+                                                                },
+                                                                {
+                                                                    id: 'test',
+                                                                    text: 'Child1.3',
+                                                                    direction: 225
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 270
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            id: '1Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 180,
+                                                            icon: 'lightbulb',
+                                                            children: [
+                                                                {
+                                                                    id: 'c45',
+                                                                    text: 'Child1.1',
+                                                                    direction: 45,
+                                                                    children: [
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 45
+                                                                        },
+                                                                        {
+                                                                            id: 'c90solo',
+                                                                            text: 'Child1.1',
+                                                                            direction: 90
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.2',
+                                                                            text: 'Child1.2',
+                                                                            direction: 135
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 180
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 270
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 315
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 90
+                                                                },
+                                                                {
+                                                                    id: 'Child1.2',
+                                                                    text: 'Child1.2',
+                                                                    direction: 135
+                                                                },
+                                                                {
+                                                                    id: 'atm',
+                                                                    text: 'Child1.3',
+                                                                    direction: 180,
+                                                                    icon: 'atom',
+                                                                    children: [
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 45
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 90
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.2',
+                                                                            text: 'Child1.2',
+                                                                            direction: 135
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 180
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 225
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 270
+                                                                        },
+                                                                        {
+                                                                            id: 'Child1.3',
+                                                                            text: 'Child1.3',
+                                                                            direction: 315
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 225
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 270
+                                                                },
+                                                                {
+                                                                    id: 'Child1.3',
+                                                                    text: 'Child1.3',
+                                                                    direction: 315
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 225
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 270
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 315
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'angle-left',
+                                                    text: 'Child2',
+                                                    direction: 270,
+                                                    icon: 'angle-left'
+                                                }
+
+                                            ]
+                                        },
+                                        {
+                                            id: 'h2',
+                                            text: 'Excel',
+                                            icon: 'file-excel',
+                                            direction: 135
+                                        },
+                                        {
+                                            id: 'h3',
+                                            text: 'PowerPoint',
+                                            icon: 'file-powerpoint',
+                                            direction: 225
+                                        },
+                                        {
+                                            id: 'h4',
+                                            text: 'Access',
+                                            icon: 'file-csv',
+                                            direction: 315
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'search',
+                                    text: 'Suche',
+                                    icon: 'search',
+                                    direction: 225,
+                                    children: [
+                                        {
+                                            id: 's1',
+                                            text: 'Neue Suche',
+                                            icon: 'search-plus',
+                                            direction: 90
+                                        },
+                                        {
+                                            id: 's2',
+                                            text: 'Suche löschen',
+                                            icon: 'search-minus',
+                                            direction: 180
+                                        },
+                                        {
+                                            id: 's3',
+                                            text: 'Ort suchen',
+                                            icon: 'search-location',
+                                            direction: 315
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'view',
+                                    text: 'Ansicht',
+                                    icon: 'eye',
+                                    direction: 270,
+                                    children: [
+                                        {
+                                            id: 'e1',
+                                            text: 'Vollbild',
+                                            icon: 'compress',
+                                            direction: 0
+                                        },
+                                        {
+                                            id: 'e2',
+                                            text: 'Hervorhebungsmodus',
+                                            icon: 'highlighter',
+                                            direction: 135,
+                                            children: [
+                                                {
+                                                    id: 'auszeichnung',
+                                                    text: 'Auszeichnung',
+                                                    //icon: 'file-excel',
+                                                    direction: 45,
+                                                    children: [
+                                                        {
+                                                            id: 'BibTex',
+                                                            text: 'BibTex',
+                                                            //icon: 'file-excel',
+                                                            direction: 0
+                                                        },
+                                                        {
+                                                            id: 'xslt',
+                                                            text: 'XSLT',
+                                                            //icon: 'vial',
+                                                            direction: 90
+                                                        },
+                                                        {
+                                                            id: 'xml',
+                                                            text: 'XML',
+                                                            //icon: 'code-branch',
+                                                            direction: 180
+                                                        },
+                                                        {
+                                                            id: 'latex',
+                                                            text: 'Latex',
+                                                            //icon: 'font',
+                                                            direction: 270
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'science',
+                                                    text: 'Wissenschaftlich',
+                                                    icon: 'vial',
+                                                    direction: 135
+                                                },
+                                                {
+                                                    id: 'code',
+                                                    text: 'Quellcode',
+                                                    icon: 'code-branch',
+                                                    direction: 225
+                                                },
+                                                {
+                                                    id: 'text',
+                                                    text: 'Reiner Text',
+                                                    icon: 'font',
+                                                    direction: 315
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'edit',
+                                    text: 'Bearbeiten',
+                                    icon: 'edit',
+                                    direction: 315,
+                                    children: [
+                                        {
+                                            id: 'ed1',
+                                            text: 'Benutzer bearbeiten',
+                                            icon: 'user-edit',
+                                            direction: 45
+                                        },
+                                        {
+                                            id: 'ed2',
+                                            text: 'Generic Edit',
+                                            icon: 'edit',
+                                            direction: 180
+                                        },
+                                        {
+                                            id: 'ed3',
+                                            text: 'Highlight',
+                                            icon: 'highlighter',
+                                            direction: 270
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 'book-dead',
+                            text: 'Nicht öffnen',
+                            icon: 'book-dead',
+                            direction: 225
+                        }
+                    ]
+                },
+                {
+                    id: 'help',
+                    text: 'Hilfe',
+                    icon: 'question',
+                    direction: 180,
+                    children: [
+                        {
+                            id: 'h1',
+                            text: 'Word',
+                            icon: 'file-word',
+                            direction: 45,
+                            children: [
+                                {
+                                    id: 'ghost',
+                                    text: 'Child1',
+                                    direction: 720,
+                                    icon: 'ghost',
+                                    children: [
+                                        {
+                                            id: 'Child1.1',
+                                            text: 'Child1.1',
+                                            direction: 0,
+                                            icon: 'grin-squint-tears',
+                                            children: [
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 45,
+                                                    icon: 'grin-squint-tears'
+                                                },
+                                                {
+                                                    id: 'Child1.2',
+                                                    text: 'Child1.2',
+                                                    direction: 90,
+                                                    icon: 'grin-squint-tears'
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 270,
+                                                    icon: 'grin-squint-tears'
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            id: 'Child1.2',
+                                            text: 'Child1.2',
+                                            direction: 90,
+                                            children: [
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 20
+                                                },
+                                                {
+                                                    id: 'Child1.2',
+                                                    text: 'Child1.2',
+                                                    direction: 90
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 180
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            id: 'Child1.3',
+                                            text: 'Child1.3',
+                                            direction: 270,
+                                            children: [
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 0
+                                                },
+                                                {
+                                                    id: 'Child1.2',
+                                                    text: 'Child1.2',
+                                                    direction: 45
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 180
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 270
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 300
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'angle-right',
+                                    text: 'Child2',
+                                    direction: 45,
+                                    icon: 'bell-slash',
+                                    children: [
+                                        {
+                                            id: 'Child1.1',
+                                            text: 'Child1.1',
+                                            direction: 0
+                                        },
+                                        {
+                                            id: 'Child1.1',
+                                            text: 'Child1.1',
+                                            direction: 20
+                                        },
+                                        {
+                                            id: 'bla',
+                                            icon: 'bomb',
+                                            text: 'Child1.2',
+                                            direction: 90
+                                        },
+                                        {
+                                            id: 'Child1.3',
+                                            text: 'Child1.3',
+                                            direction: 270
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'angle-right',
+                                    text: 'Child2',
+                                    direction: 90,
+                                    icon: 'angle-right',
+                                    children: [
+                                        {
+                                            id: 'Child1.1',
+                                            text: 'Child1.1',
+                                            direction: 0
+                                        },
+                                        {
+                                            id: 'Child1.1',
+                                            text: 'Child1.1',
+                                            direction: 20
+                                        },
+                                        {
+                                            id: 'bla',
+                                            icon: 'bomb',
+                                            text: 'Child1.2',
+                                            direction: 90
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'Child3',
+                                    text: 'Child2',
+                                    direction: 150,
+                                    icon: 'database',
+                                    children: [
+                                        {
+                                            id: 'Child1.1',
+                                            text: 'Child1.1',
+                                            direction: 45,
+                                            icon: 'download'
+                                        },
+                                        {
+                                            id: 'Child1.1',
+                                            text: 'Child1.1',
+                                            direction: 90,
+                                            icon: 'inbox',
+                                            children: [
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 45,
+                                                    icon: 'download',
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 0,
+                                                            icon: 'download',
+                                                            children: [
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 225,
+                                                                    icon: 'download',
+                                                                    children: [
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 90,
+                                                                            icon: 'download',
+                                                                            children: [
+                                                                                {
+                                                                                    id: 'Child1.1',
+                                                                                    text: 'Child1.1',
+                                                                                    direction: 0,
+                                                                                    icon: 'download',
+                                                                                    children: [
+                                                                                        {
+                                                                                            id: 'Child1.1',
+                                                                                            text: 'Child1.1',
+                                                                                            direction: 270,
+                                                                                            icon: 'download'
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 90,
+                                                    icon: 'download',
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 90,
+                                                            icon: 'download',
+                                                            children: [
+                                                                {
+                                                                    id: 'Child1.1',
+                                                                    text: 'Child1.1',
+                                                                    direction: 90,
+                                                                    icon: 'download',
+                                                                    children: [
+                                                                        {
+                                                                            id: 'Child1.1',
+                                                                            text: 'Child1.1',
+                                                                            direction: 0,
+                                                                            icon: 'download',
+                                                                            children: [
+                                                                                {
+                                                                                    id: 'Child1.1',
+                                                                                    text: 'Child1.1',
+                                                                                    direction: 0,
+                                                                                    icon: 'download',
+                                                                                    children: [
+                                                                                        {
+                                                                                            id: 'Child1.1',
+                                                                                            text: 'Child1.1',
+                                                                                            direction: 0,
+                                                                                            icon: 'download',
+                                                                                            children: [
+                                                                                                {
+                                                                                                    id: 'Child1.1',
+                                                                                                    text: 'Child1.1',
+                                                                                                    direction: 0,
+                                                                                                    icon: 'download',
+                                                                                                    children: [
+                                                                                                        {
+                                                                                                            id: 'Child1.1',
+                                                                                                            text: 'Child1.1',
+                                                                                                            direction: 0,
+                                                                                                            icon: 'download',
+                                                                                                            children: [
+                                                                                                                {
+                                                                                                                    id: 'Child1.1',
+                                                                                                                    text: 'Child1.1',
+                                                                                                                    direction: 0,
+                                                                                                                    icon: 'download',
+                                                                                                                    children: [
+                                                                                                                        {
+                                                                                                                            id: 'Child1.1',
+                                                                                                                            text: 'Child1.1',
+                                                                                                                            direction: 270,
+                                                                                                                            icon: 'download',
+                                                                                                                            children: [
+                                                                                                                                {
+                                                                                                                                    id: 'Child1.1',
+                                                                                                                                    text: 'Child1.1',
+                                                                                                                                    direction: 270,
+                                                                                                                                    icon: 'download',
+                                                                                                                                    children: [
+                                                                                                                                        {
+                                                                                                                                            id: 'Child1.1',
+                                                                                                                                            text: 'Child1.1',
+                                                                                                                                            direction: 270,
+                                                                                                                                            icon: 'download',
+                                                                                                                                            children: [
+                                                                                                                                                {
+                                                                                                                                                    id: 'Child1.1',
+                                                                                                                                                    text: 'Child1.1',
+                                                                                                                                                    direction: 270,
+                                                                                                                                                    icon: 'download'
+                                                                                                                                                }
+                                                                                                                                            ]
+                                                                                                                                        }
+                                                                                                                                    ]
+                                                                                                                                }
+                                                                                                                            ]
+                                                                                                                        }
+                                                                                                                    ]
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        }
+                                                                                                    ]
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            id: 'Child1.2',
+                                            text: 'Child1.2',
+                                            direction: 135,
+                                            icon: 'paper-plane',
+                                            children: [
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 45
+                                                },
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 90
+                                                },
+                                                {
+                                                    id: 'Child1.2',
+                                                    text: 'Child1.2',
+                                                    direction: 135
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 180
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 225
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 270
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            id: '1Child1.3',
+                                            text: 'Child1.3',
+                                            direction: 180,
+                                            icon: 'laptop',
+                                            children: [
+                                                {
+                                                    id: 'c45',
+                                                    text: 'Child1.1',
+                                                    direction: 45,
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 45
+                                                        },
+                                                        {
+                                                            id: 'c90solo',
+                                                            text: 'Child1.1',
+                                                            direction: 90
+                                                        },
+                                                        {
+                                                            id: 'Child1.2',
+                                                            text: 'Child1.2',
+                                                            direction: 135
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 180
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 270
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 315
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 90
+                                                },
+                                                {
+                                                    id: 'Child1.2',
+                                                    text: 'Child1.2',
+                                                    direction: 135
+                                                },
+                                                {
+                                                    id: 'atm',
+                                                    text: 'Child1.3',
+                                                    direction: 180,
+                                                    icon: 'atom',
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 45
+                                                        },
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 90
+                                                        },
+                                                        {
+                                                            id: 'Child1.2',
+                                                            text: 'Child1.2',
+                                                            direction: 135
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 180
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 225
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 270
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 315
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 225
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 270
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 315
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            id: 'Child1.3',
+                                            text: 'Child1.3',
+                                            direction: 225,
+                                            icon: 'upload'
+                                        },
+                                        {
+                                            id: 'wifi',
+                                            text: 'Child1.3',
+                                            direction: 270,
+                                            icon: 'wifi'
+                                        },
+                                        {
+                                            id: 'Child1.3',
+                                            text: 'Child1.3',
+                                            direction: 315,
+                                            icon: 'save'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'Child3',
+                                    text: 'Child2',
+                                    direction: 180,
+                                    icon: 'circle-notch',
+                                    children: [
+                                        {
+                                            id: 'Child1.1',
+                                            text: 'Child1.1',
+                                            direction: 90
+                                        },
+                                        {
+                                            id: 'Child1.2',
+                                            text: 'Child1.2',
+                                            direction: 135,
+                                            children: [
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 45
+                                                },
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 90
+                                                },
+                                                {
+                                                    id: 'Child1.2',
+                                                    text: 'Child1.2',
+                                                    direction: 135
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 180
+                                                },
+                                                {
+                                                    id: 'test',
+                                                    text: 'Child1.3',
+                                                    direction: 225
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 270
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            id: '1Child1.3',
+                                            text: 'Child1.3',
+                                            direction: 180,
+                                            icon: 'lightbulb',
+                                            children: [
+                                                {
+                                                    id: 'c45',
+                                                    text: 'Child1.1',
+                                                    direction: 45,
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 45
+                                                        },
+                                                        {
+                                                            id: 'c90solo',
+                                                            text: 'Child1.1',
+                                                            direction: 90
+                                                        },
+                                                        {
+                                                            id: 'Child1.2',
+                                                            text: 'Child1.2',
+                                                            direction: 135
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 180
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 270
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 315
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'Child1.1',
+                                                    text: 'Child1.1',
+                                                    direction: 90
+                                                },
+                                                {
+                                                    id: 'Child1.2',
+                                                    text: 'Child1.2',
+                                                    direction: 135
+                                                },
+                                                {
+                                                    id: 'atm',
+                                                    text: 'Child1.3',
+                                                    direction: 180,
+                                                    icon: 'atom',
+                                                    children: [
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 45
+                                                        },
+                                                        {
+                                                            id: 'Child1.1',
+                                                            text: 'Child1.1',
+                                                            direction: 90
+                                                        },
+                                                        {
+                                                            id: 'Child1.2',
+                                                            text: 'Child1.2',
+                                                            direction: 135
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 180
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 225
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 270
+                                                        },
+                                                        {
+                                                            id: 'Child1.3',
+                                                            text: 'Child1.3',
+                                                            direction: 315
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 225
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 270
+                                                },
+                                                {
+                                                    id: 'Child1.3',
+                                                    text: 'Child1.3',
+                                                    direction: 315
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            id: 'Child1.3',
+                                            text: 'Child1.3',
+                                            direction: 225
+                                        },
+                                        {
+                                            id: 'Child1.3',
+                                            text: 'Child1.3',
+                                            direction: 270
+                                        },
+                                        {
+                                            id: 'Child1.3',
+                                            text: 'Child1.3',
+                                            direction: 315
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'angle-left',
+                                    text: 'Child2',
+                                    direction: 270,
+                                    icon: 'angle-left'
+                                }
+
+                            ]
+                        },
+                        {
+                            id: 'h2',
+                            text: 'Excel',
+                            icon: 'file-excel',
+                            direction: 135
+                        },
+                        {
+                            id: 'h3',
+                            text: 'PowerPoint',
+                            icon: 'file-powerpoint',
+                            direction: 225
+                        },
+                        {
+                            id: 'h4',
+                            text: 'Access',
+                            icon: 'file-csv',
+                            direction: 315
+                        }
+                    ]
+                },
+                {
+                    id: 'search',
+                    text: 'Suche',
+                    icon: 'search',
+                    direction: 225,
+                    children: [
+                        {
+                            id: 's1',
+                            text: 'Neue Suche',
+                            icon: 'search-plus',
+                            direction: 90
+                        },
+                        {
+                            id: 's2',
+                            text: 'Suche löschen',
+                            icon: 'search-minus',
+                            direction: 180
+                        },
+                        {
+                            id: 's3',
+                            text: 'Ort suchen',
+                            icon: 'search-location',
+                            direction: 315
+                        }
+                    ]
+                },
+                {
+                    id: 'view',
+                    text: 'Ansicht',
+                    icon: 'eye',
+                    direction: 270,
+                    children: [
+                        {
+                            id: 'e1',
+                            text: 'Vollbild',
+                            icon: 'compress',
+                            direction: 0
+                        },
+                        {
+                            id: 'e2',
+                            text: 'Hervorhebungsmodus',
+                            icon: 'highlighter',
+                            direction: 180,
+                            children: [
+                                {
+                                    id: 'auszeichnung',
+                                    text: 'Auszeichnung',
+                                    //icon: 'file-excel',
+                                    direction: 45,
+                                    children: [
+                                        {
+                                            id: 'BibTex',
+                                            text: 'BibTex',
+                                            //icon: 'file-excel',
+                                            direction: 0
+                                        },
+                                        {
+                                            id: 'xslt',
+                                            text: 'XSLT',
+                                            //icon: 'vial',
+                                            direction: 90
+                                        },
+                                        {
+                                            id: 'xml',
+                                            text: 'XML',
+                                            //icon: 'code-branch',
+                                            direction: 180
+                                        },
+                                        {
+                                            id: 'latex',
+                                            text: 'Latex',
+                                            //icon: 'font',
+                                            direction: 270
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'science',
+                                    text: 'Wissenschaftlich',
+                                    icon: 'vial',
+                                    direction: 135
+                                },
+                                {
+                                    id: 'code',
+                                    text: 'Quellcode',
+                                    icon: 'code-branch',
+                                    direction: 225
+                                },
+                                {
+                                    id: 'text',
+                                    text: 'Reiner Text',
+                                    icon: 'font',
+                                    direction: 315
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'edit',
+                    text: 'Bearbeiten',
+                    icon: 'edit',
+                    direction: 315,
+                    children: [
+                        {
+                            id: 'ed1',
+                            text: 'Benutzer bearbeiten',
+                            icon: 'user-edit',
+                            direction: 45
+                        },
+                        {
+                            id: 'ed2',
+                            text: 'Generic Edit',
+                            icon: 'edit',
+                            direction: 180
+                        },
+                        {
+                            id: 'ed3',
+                            text: 'Highlight',
+                            icon: 'highlighter',
+                            direction: 270
+                        }
+                    ]
+                }
+            ]
+        };
+
+        menu.init();
+        //menu.drawTrace();
+        menu.setStructure(MarkingTS.MenuParser.parse(struct));
+        console.log(menu._rootItem.childCount);
+        menu.selection$.subscribe(s => {
+            if (s.type === 'itemSelection') {
+                console.log(s);
+            }
+        });
+
+        window.menu = menu;
+    };
+
+</script>
+</body>
+</html>
