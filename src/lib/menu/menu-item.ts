@@ -214,6 +214,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.createArcs();
 
         this.ready = true;
+        this.itemReady();
     }
 
     /**
@@ -794,6 +795,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this.parent.state = ItemState.ACTIVE;
         this.state = ItemState.BACK;
+
+        this.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
+        this.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
+
 /*        console.log(this._animations._animations.length)
         this._animations._animations.forEach(a => {
             console.log(a.target)
@@ -940,6 +945,16 @@ export default class MenuItem extends Group implements MenuIdentifier {
         });
     }
 
+    protected resetChildColor(): void {
+        this.getChildren().forEach((child: MenuItem): void => {
+            child.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].color;
+
+            child.getChildren().forEach((childChild: MenuItem): void => {
+                childChild.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].color;
+            });
+        });
+    };
+
     /**
      * Function that gets attached to the inputAngle Observable
      *
@@ -948,18 +963,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
      */
     protected selectionLogic(angle: number): void {
         const dist: number = CENTER.getDistance(this.globalToLocal(this.menu.inputPosition));
-        const resetChildColor = (): void => {
-            this.getChildren().forEach((child: MenuItem): void => {
-                child.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].color;
-
-                child.getChildren().forEach((childChild: MenuItem): void => {
-                    childChild.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].color;
-                });
-            });
-        };
 
         if (dist >= this.settings[SettingsGroup.RADII].maxClickRadius && this.settings[SettingsGroup.MAIN].enableMaxClickRadius) {
-            resetChildColor();
+            this.resetChildColor();
             this.arcGroup.children
                 .forEach((a: Item): void => {
                     if (typeof a.data.fx !== "undefined" && a.data.fx.running) {
@@ -983,43 +989,59 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
             this.updateText(this.textContent);
 
-            resetChildColor();
+            this.resetChildColor();
             return;
         }
 
         if (this.back) {
             this.resetActiveHovered();
-            resetChildColor();
-            this.event(MenuItemEventType.BACK_HOVER, this.parent as MenuItem);
-            this.updateText('Back');
+            this.selectionLogicBackOperations();
         } else {
             if (this.isLeaf) {
                 return;
             }
+
             const nearestChild = this.getNearestChild(angle);
 
             if (this.hoveredChild === nearestChild) {
                 return;
             }
 
-            resetChildColor();
-
-            this.hoveredChild = nearestChild;
-            this.hoveredChild.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
-            this.hoveredChild.getChildren().forEach((child: MenuItem): void => {
-                child.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
-            });
-
-            if (this.hoveredChild.isLeaf) {
-                this.event(MenuItemEventType.HOVER_SELECTION, this.hoveredChild);
-            } else {
-                this.event(MenuItemEventType.HOVER, this.hoveredChild);
-            }
-
-            this.updateText(this.hoveredChild.textContent);
+            this.selectionLogicHoverOperations(nearestChild);
         }
 
         this.animateArcs(angle);
+    }
+
+    /**
+     * Gets run if {selectionLogic} determines that the user wants to navigate back
+     */
+    protected selectionLogicBackOperations() {
+        this.resetChildColor();
+        this.event(MenuItemEventType.BACK_HOVER, this.parent as MenuItem);
+        this.updateText('Back');
+    }
+
+    /**
+     * Gets run if back is false
+     * @see {selectionLogicBackOperations}
+     */
+    protected selectionLogicHoverOperations(nearestChild: MenuItem) {
+        this.resetChildColor();
+
+        this.hoveredChild = nearestChild;
+        this.hoveredChild.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
+        this.hoveredChild.getChildren().forEach((child: MenuItem): void => {
+            child.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
+        });
+
+        if (this.hoveredChild.isLeaf) {
+            this.event(MenuItemEventType.HOVER_SELECTION, this.hoveredChild);
+        } else {
+            this.event(MenuItemEventType.HOVER, this.hoveredChild);
+        }
+
+        this.updateText(this.hoveredChild.textContent);
     }
 
     /**
@@ -1294,7 +1316,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
         }
 
         if ((this.parent as MenuItem).state === ItemState.PARENT) {
-            this._animations.push(
+            this.geometryGroup.visible = false;
+/*            this._animations.push(
                 new Animation({
                     target: this,
                     from: {
@@ -1307,10 +1330,11 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 new Animation({
                     target: this.geometryGroup,
                     to: {
-                        scaling: this.settings[SettingsGroup.SCALES].dot,
+                        //scaling: this.settings[SettingsGroup.SCALES].dot,
+                        scaling: Number.EPSILON,
                     }
                 })
-            );
+            );*/
 
             return;
         }
@@ -1350,7 +1374,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
         let rootPos = this.menu.inputPosition;
         if (!parent.isRoot) {
             rootPos = this.root.position.add(parent.globalToLocal(this.menu.inputPosition)).floor();
-            this.parent.parent.connector.opacity = 1;
+            this.parent.parent.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
+            this.parent.parent.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
             this.parent.parent.geometry.opacity = 1;
             this.parent.parent.getChildren().forEach(child => {
                 child.geometry.opacity = 1;
@@ -1482,7 +1507,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         if (this.state === ItemState.PARENT && typeof this.activeChild !== "undefined" && this.parent instanceof MenuItem) {
 
-            this.parent.connector.opacity = 0.25;
+            //this.parent.connector.opacity = 0.25;
+            this.parent.connector.strokeWidth = 2;
+            this.parent.connector.strokeColor = 'rgba(57,58,60,0.2)';
             this.parent.geometry.opacity = 0.25;
             this.parent.getChildren().filter(child => child !== this).forEach(child => {
                 child.geometry.opacity = 0.25;
@@ -1594,5 +1621,16 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 }
             }
         });
+    }
+
+
+
+    // Stuff Added while creating ribbonslider
+    /**
+     * Called after init
+     * @see {init}
+     */
+    protected itemReady(): void {
+
     }
 }

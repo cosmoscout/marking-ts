@@ -44,7 +44,7 @@
         const menu = new MarkingTS.Menu('body', {
             main: {
                 animationDuration: 200,
-                enableMaxClickRadius: true
+                enableMaxClickRadius: false
             },
             geometry: {
                 stroke: {
@@ -64,14 +64,15 @@
                     text: 'Datei',
                     icon: 'file',
                     direction: 0,
-                    type: 'slider',
+                    type: 'ribbonslider',
                 },
                 {
                     id: 'tools',
                     text: 'Werkzeuge',
                     icon: 'tools',
                     direction: 45,
-                    children: [
+                    type: 'crankslider',
+                    /*children: [
                         {
                             id: 't1',
                             text: 'Word',
@@ -96,7 +97,7 @@
                             icon: 'file-csv',
                             direction: 270
                         }
-                    ]
+                    ]*/
                 },
                 {
                     id: 'project',

@@ -259,6 +259,7 @@ export default class Menu implements MenuData {
         if (typeof window.PointerEvent === "undefined") {
             this.setupObservableDataFromInputEvents();
         } else {
+            // This is definitely a TODO
             this.setupObservableDataFromPointerEvents();
         }
 
@@ -358,6 +359,8 @@ export default class Menu implements MenuData {
      * Sets up needed Observable data mapping and subscribing
      */
     private setupObservables(): void {
+        // Manually creating dragging events from Inputs
+        // TODO!
         this.inputActivation$.pipe(
             filter((e: Input): boolean => e.buttons === 1),
             switchMap((): Observable<DragDefinition> => this.inputPosition$.pipe(
@@ -383,6 +386,7 @@ export default class Menu implements MenuData {
             mergeMap((): Observable<ClickState> => {
                 // @ts-ignore
                 return this.inputDeactivation$.pipe(
+                    // Holding mouse button too long wont trigger a click event | TODO
                     timeoutWith(Menu.INPUT_TIMEOUT, new Observable()),
                     map((e: Input): ClickState => {
                         if (e.button === 0) {

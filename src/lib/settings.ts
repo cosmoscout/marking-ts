@@ -11,8 +11,8 @@ export default class Settings implements SettingsDefinition {
     private readonly _defaultSettings: SettingsDefinition = {
         [SettingsGroup.MAIN]: {
             minDistance: 150,
-            minTraceDistance: 90,
-            animationDuration: 2500,
+            minTraceDistance: 175,
+            animationDuration: 250,
             enableMaxClickRadius: true,
         },
         [SettingsGroup.GEOMETRY]: {

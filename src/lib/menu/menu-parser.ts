@@ -1,7 +1,8 @@
 import MenuItem from "./menu-item";
 import Angle from "../../utlis/angle";
 import {MenuItemDefinition} from "../interfaces";
-import Slider from "./slider";
+import Crankslider from "./crankslider";
+import Ribbonslider from "./ribbonslider";
 
 export default class MenuParser {
     /**
@@ -24,10 +25,22 @@ export default class MenuParser {
         if (parent === null) {
             item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon ? structure.icon : undefined, true);
         } else {
-            if (typeof structure.type === "undefined") {
+            if (typeof structure.type === "undefined" || structure.type.length === 0) {
                 item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon ? structure.icon : undefined);
             } else {
-                item = new Slider(structure.id, structure.direction, structure.text, structure.icon ? structure.icon : undefined);
+                switch (structure.type) {
+                    case 'crankslider':
+                        item = new Crankslider(structure.id, structure.direction, structure.text, structure.icon ? structure.icon : undefined);
+                        break;
+
+                    case 'ribbonslider':
+                        item = new Ribbonslider(structure.id, structure.direction, structure.text, structure.icon ? structure.icon : undefined);
+                        break;
+
+                    default:
+                        throw new Error('type is not in [crankslider, ribbonslider]');
+                }
+
             }
             parent.addChild(item);
             MenuParser.checkAngles(item);

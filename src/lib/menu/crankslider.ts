@@ -7,7 +7,7 @@ import {ClickState, DragState, ItemState, SettingsGroup} from "../enums";
 import Animation from "../../utlis/animation";
 
 
-export default class Slider extends MenuItem {
+export default class Crankslider extends MenuItem {
     public STEP_SIZE: number = 1;
 
     private valueGroup: Group;
