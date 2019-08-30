@@ -21,6 +21,8 @@ export interface MenuData {
     trace$: Trace;
 
     markingMode: boolean;
+
+    canvas: HTMLCanvasElement;
 }
 
 /**
@@ -60,6 +62,7 @@ export interface MenuItemDefinition {
     direction: number;
     children?: Array<MenuItemDefinition>;
     type?: string;
+    data?: any;
 }
 
 

@@ -52,6 +52,10 @@ export default class MenuParser {
             MenuParser.parse(child, item);
         });
 
+        if (typeof structure.data !== "undefined") {
+            item.data = structure.data;
+        }
+
         return item;
     }
 
