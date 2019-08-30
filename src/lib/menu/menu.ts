@@ -236,6 +236,13 @@ export default class Menu implements MenuData {
         return this._markingMode;
     }
 
+    /**
+     * @return {HTMLCanvasElement}
+     */
+    public get canvas(): HTMLCanvasElement {
+        return this._canvas;
+    }
+
 
     /**
      * Initializes the menu, sets up the canvas and scope
