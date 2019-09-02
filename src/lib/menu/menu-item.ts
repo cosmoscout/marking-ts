@@ -195,6 +195,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.setupGeometry();
         this.setupIcon();
         this.setupText();
+        this.afterSetup();
 
         this.addChild(this.connector);
 
@@ -535,7 +536,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
      *
      * @return {Path.Line}
      */
-    protected get connector(): Path.Line {
+    public get connector(): Path.Line {
         if (typeof this._connector === "undefined") {
             throw new Error(`Connector missing on ${this.itemId}`);
         }
@@ -799,10 +800,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
         this.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
 
-/*        console.log(this._animations._animations.length)
-        this._animations._animations.forEach(a => {
-            console.log(a.target)
-        })*/
         this.root.redraw();
     }
 
@@ -981,15 +978,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         }
 
         if (dist < this.settings[SettingsGroup.GEOMETRY].size / 2) {
-            this.resetActiveHovered();
-
-            this.arcGroup.children.forEach((arc: Item): void => {
-                arc.opacity = 0;
-            });
-
-            this.updateText(this.textContent);
-
-            this.resetChildColor();
+            this.selectionLogicInGeometryOperations();
             return;
         }
 
@@ -1011,6 +1000,18 @@ export default class MenuItem extends Group implements MenuIdentifier {
         }
 
         this.animateArcs(angle);
+    }
+
+    protected selectionLogicInGeometryOperations(): void {
+        this.resetActiveHovered();
+
+        this.arcGroup.children.forEach((arc: Item): void => {
+            arc.opacity = 0;
+        });
+
+        this.updateText(this.textContent);
+
+        this.resetChildColor();
     }
 
     /**
@@ -1374,8 +1375,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
         let rootPos = this.menu.inputPosition;
         if (!parent.isRoot) {
             rootPos = this.root.position.add(parent.globalToLocal(this.menu.inputPosition)).floor();
-            this.parent.parent.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
-            this.parent.parent.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
+            (this.parent.parent as MenuItem).connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
+            (this.parent.parent as MenuItem).connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
             this.parent.parent.geometry.opacity = 1;
             this.parent.parent.getChildren().forEach(child => {
                 child.geometry.opacity = 1;
@@ -1627,10 +1628,17 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
     // Stuff Added while creating ribbonslider
     /**
-     * Called after init
+     * Called before init end
      * @see {init}
      */
     protected itemReady(): void {
+
+    }
+
+    /**
+     * Called after setup methods
+     */
+    protected afterSetup(): void {
 
     }
 }
