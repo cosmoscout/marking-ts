@@ -401,7 +401,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this.geometryGroup.position = CENTER;
         this.geometryGroup.visible = true;
-        this.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].color;
+        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
 
         this.icon.visible = true;
         this.icon.opacity = 1;
@@ -1317,8 +1317,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
         }
 
         if ((this.parent as MenuItem).state === ItemState.PARENT) {
-            this.geometryGroup.visible = false;
-/*            this._animations.push(
+            //this.geometryGroup.visible = false;
+            this._animations.push(
                 new Animation({
                     target: this,
                     from: {
@@ -1331,11 +1331,11 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 new Animation({
                     target: this.geometryGroup,
                     to: {
-                        //scaling: this.settings[SettingsGroup.SCALES].dot,
-                        scaling: Number.EPSILON,
+                        scaling: this.settings[SettingsGroup.SCALES].dot,
+                        //scaling: Number.EPSILON,
                     }
                 })
-            );*/
+            );
 
             return;
         }
@@ -1539,7 +1539,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Animation to Selected
      */
     protected animateStateSelected(): void {
-        this.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
+        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
         this.icon.opacity = MenuItem.ICON_BG_OPACITY;
 
         this._animations.push(
@@ -1565,7 +1565,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Animation to Active Selection
      */
     protected animateStateActiveSelection(): void {
-        this.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
+        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
 
         this._animations.push(
             new Animation({

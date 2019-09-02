@@ -116,6 +116,12 @@ export default class Crankslider extends MenuItem {
         this.valueGroup.visible = this.state === ItemState.ACTIVE;
         this.indicator.visible = this.state === ItemState.ACTIVE;
         this.indicatorDot.visible = this.state === ItemState.ACTIVE;
+
+
+
+        if (this.state === ItemState.DOT) {
+            this.text.visible = false;
+        }
     }
 
     protected updateText(): void {

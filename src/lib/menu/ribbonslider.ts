@@ -508,6 +508,10 @@ export default class Ribbonslider extends MenuItem {
         this.arcGroup.visible = false;
         this.text.visible = true;
         this.icon.opacity = 0;
+
+        if (this.state === ItemState.DOT) {
+            this.text.visible = false;
+        }
     }
 
     protected animateStateActive(): void {
