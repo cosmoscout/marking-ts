@@ -7,6 +7,7 @@ import ColorFactory from "../../utlis/color-factory";
 import throttle from 'lodash/throttle'
 import Animation from "../../utlis/animation";
 import Angle from "../../utlis/angle";
+import {precision, roundNumber} from "../../utlis/numbers";
 
 export default class Ribbonslider extends MenuItem {
     /**
@@ -270,7 +271,7 @@ export default class Ribbonslider extends MenuItem {
         let dots = Array<Path.Circle>();
 
         let circle = new Path.Circle(ZERO_POINT, 3);
-        circle.fillColor = this.settings[SettingsGroup.GEOMETRY].stroke.color;
+        circle.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].stroke.color);
         circle.strokeWidth = 0;
 
         for (let i = 0; i < 4; i++) {
@@ -338,7 +339,7 @@ export default class Ribbonslider extends MenuItem {
      */
     private setupRibbonContent(): void {
         const onMouseEnterPointer = (e: MouseEvent) => {
-            e.target.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
+            e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
             this.menu.canvas.style.cursor = "pointer";
         };
         const onMouseLeave = () => {
@@ -362,7 +363,7 @@ export default class Ribbonslider extends MenuItem {
                 valueText.onMouseEnter = onMouseEnterPointer;
                 valueText.onMouseLeave = (e: MouseEvent) => {
                     onMouseLeave();
-                    e.target.fillColor = this.settings[SettingsGroup.GEOMETRY].text.color;
+                    e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].text.color);
                 };
                 valueText.onClick = textOnClick;
                 this.ribbonGroup.addChild(valueText);
@@ -399,7 +400,7 @@ export default class Ribbonslider extends MenuItem {
         if (!this.hasLock) {
             // @ts-ignore
             this.menu.canvas.requestPointerLock();
-            this.ribbon.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
+            this.ribbon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
             document.addEventListener('mousemove', this.pointerLockListener);
             this.hasLock = true;
         }
@@ -407,7 +408,7 @@ export default class Ribbonslider extends MenuItem {
         if (drag.state === DragState.END && this.hasLock) {
             // @ts-ignore
             document.exitPointerLock();
-            this.ribbon.fillColor = this.settings[SettingsGroup.GEOMETRY].color;
+            this.ribbon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
             document.removeEventListener('mousemove', this.pointerLockListener);
             this.hasLock = false;
         }
@@ -425,7 +426,14 @@ export default class Ribbonslider extends MenuItem {
     private pointerLockListener = (event: NativeMouseEvent) => {
         if (event.movementX != 0) {
             const value = this.configuration.min - (this.ribbonGroup.position.x / this.configuration.stepDist) * this.configuration.stepSize;
-            this.value =  Math.round((value * 100) *this.configuration.stepSize);
+            const numberPrecision = precision(this.configuration.stepSize);
+
+            if (numberPrecision === 0) {
+                this.value = Math.round(value);
+            } else {
+                this.value = roundNumber(value, numberPrecision);
+            }
+
             this.updateRibbonPosition(event.movementX);
         }
     };
@@ -504,9 +512,9 @@ export default class Ribbonslider extends MenuItem {
 
     protected animateStateActive(): void {
         super.animateStateActive();
-        this.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].color;
+        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
         (this.parent as MenuItem).connector.strokeWidth = 2;
-        (this.parent as MenuItem).connector.strokeColor = 'rgba(57,58,60,0.2)';
+        (this.parent as MenuItem).connector.strokeColor = ColorFactory.fromString('rgba(57,58,60,0.2)');
     }
 
     protected selectionLogicBackOperations() {
