@@ -765,6 +765,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
     /**
      * Updates the text object with new content.
      * Used to display hovered child names
+     * Will fit the text to the geometry's bounds if it would overflow
      *
      * @param {string} content The new text content
      */
@@ -775,10 +776,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this.text.scaling = DEFAULT_SCALE;
         this.text.content = content;
-
-        if (typeof this.text.bounds.size.width === null) {
-            throw "W";
-        }
 
         if (this.text.bounds.size.width + 10 > this.geometry.bounds.size.width) {
             this.text.fitBounds(this.geometry.bounds.scale(MenuItem.TEXT_OVERFLOW_SCALE));
@@ -1023,6 +1020,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.animateArcs(angle);
     }
 
+    /**
+     * Method gets run if input device is in geometry object
+     */
     protected selectionLogicInGeometryOperations(): void {
         this.resetActiveHovered();
 
@@ -1601,6 +1601,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
         });
     }
 
+    /**
+     * Fades in the Selection Arcs
+     * @param angle
+     */
     protected animateArcs(angle: number): void {
         this.arcGroup.children.forEach((arc: Item): void => {
             if (Angle.between(angle, arc.data.from, arc.data.to)) {
