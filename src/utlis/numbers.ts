@@ -21,9 +21,7 @@ export function precision(value: number): number {
  * @param scale
  */
 export function roundNumber(num: number, scale: number): number {
-    if (!("" + num).includes("e")) {
-        return +(Math.round(num + "e+" + scale) + "e-" + scale);
-    } else {
+    if (("" + num).includes("e")) {
         let arr = ("" + num).split("e");
         let sig = "";
 
@@ -32,5 +30,7 @@ export function roundNumber(num: number, scale: number): number {
         }
 
         return +(Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) + "e-" + scale);
+    } else {
+        return +(Math.round(num + "e+" + scale) + "e-" + scale);
     }
 }

@@ -166,7 +166,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         if (this.isRoot) {
             this.project.activeLayer.addChild(this);
         } else {
-            this.parent.addChild(this);
+            (this.parent as MenuItem).addChild(this);
         }
 
         this._inputAngle$ = this.menu.inputPosition$.pipe(
@@ -195,6 +195,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.setupGeometry();
         this.setupIcon();
         this.setupText();
+        this.setupSelectionRadius();
         this.afterSetup();
 
         this.addChild(this.connector);
@@ -202,7 +203,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.addChild(this.geometryGroup);
         this.geometryGroup.addChild(this.arcGroup);
         this.geometryGroup.addChild(this.geometry);
-        this.geometryGroup.addChild(this._selectionRadius);
+        this.geometryGroup.addChild(this.selectionRadius);
         this.geometryGroup.addChild(this.icon);
         this.geometryGroup.addChild(this.text);
         this.geometryGroup.addChild(this.lineGroup);
@@ -413,7 +414,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.lineGroup.visible = false;
 
         this.connector.visible = false;
-        this._selectionRadius.visible = false;
+        this.selectionRadius.visible = false;
 
         if (this.state === ItemState.ACTIVE || this.state === ItemState.ACTIVE_SELECTION) {
             this.addSubscriptions();
@@ -421,7 +422,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             this.updateText(this.textContent);
         } else {
             this.subscription && this.subscription.unsubscribe();
-            this.arcGroup.children.forEach((arc: Item): void => {
+            (this.arcGroup.children as Item[]).forEach((arc: Item): void => {
                 arc.opacity = 0;
             });
         }
@@ -466,7 +467,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 this.text.visible = true;
                 this.arcGroup.visible = true;
                 this.lineGroup.visible = true;
-                this._selectionRadius.visible = this.settings[SettingsGroup.MAIN].enableMaxClickRadius;
+                this.selectionRadius.visible = this.settings[SettingsGroup.MAIN].enableMaxClickRadius;
                 break;
 
             case ItemState.ACTIVE_SELECTION:
@@ -638,6 +639,18 @@ export default class MenuItem extends Group implements MenuIdentifier {
     }
 
     /**
+     * @return {Path.Circle}
+     * @throws {Error}
+     */
+    protected get selectionRadius(): Path.Circle {
+        if (typeof this._selectionRadius === "undefined") {
+            throw new Error(`Selection Radius not initialized on ${this.itemId}`);
+        }
+
+        return this._selectionRadius;
+    }
+
+    /**
      * Sets up Geometry, Arc and Text group
      */
     protected setupGroups(): void {
@@ -670,15 +683,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
         this.geometry.strokeScaling = false;
-
-        this._selectionRadius = new Path.Circle(CENTER, this.settings[SettingsGroup.RADII].maxClickRadius);
-        this._selectionRadius.fillColor = null;
-        this._selectionRadius.strokeWidth = 1;
-        this._selectionRadius.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
-        this._selectionRadius.strokeColor.alpha = 0.25;
-
-
-        this._selectionRadius.visible = false;
     }
 
     /**
@@ -695,7 +699,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 console.error(`Icon '${this.iconName}' does not exist.`);
                 this._icon = new CompoundPath('');
             } else {
-                this._icon = new CompoundPath(icon.icon[4]);
+                this._icon = new CompoundPath((icon.icon[4] as string));
 
                 this.icon.scale(this.settings[SettingsGroup.SCALES].icon.base * this.settings[SettingsGroup.SCALES].icon.solo); // Default Size = 512px   1/16 = 0.0625 = 32px
                 this.icon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].icon.color);
@@ -721,12 +725,25 @@ export default class MenuItem extends Group implements MenuIdentifier {
     }
 
     /**
+     * Sets up a max radius for menu interactions
+     * Clicking outside the radius will hide the menu
+     */
+    protected setupSelectionRadius(): void {
+        this._selectionRadius = new Path.Circle(CENTER, this.settings[SettingsGroup.RADII].maxClickRadius);
+        this.selectionRadius.fillColor = null;
+        this.selectionRadius.strokeWidth = 1;
+        this.selectionRadius.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
+        this.selectionRadius.strokeColor.alpha = 0.25;
+        this.selectionRadius.visible = false;
+    }
+
+    /**
      * Get all menu item children
      *
      * @return {Array<MenuItem>}
      */
     protected getChildren(): Array<MenuItem> {
-        return this.children.filter((child: Item): boolean => {
+        return (this.children as Item[]).filter((child: Item): boolean => {
             return child instanceof MenuItem;
         }) as Array<MenuItem>;
     }
@@ -759,6 +776,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.text.scaling = DEFAULT_SCALE;
         this.text.content = content;
 
+        if (typeof this.text.bounds.size.width === null) {
+            throw "W";
+        }
+
         if (this.text.bounds.size.width + 10 > this.geometry.bounds.size.width) {
             this.text.fitBounds(this.geometry.bounds.scale(MenuItem.TEXT_OVERFLOW_SCALE));
         }
@@ -789,9 +810,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this.menu.trace$.reset();
         this.resetActiveHovered();
-        //this.parent.resetActiveHovered();
 
-        console.log('asd')
         this.event(MenuItemEventType.BACK, this.parent);
 
         this.parent.state = ItemState.ACTIVE;
@@ -860,13 +879,15 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this.geometryGroup.position = CENTER;
 
-        this.arcGroup.children.forEach((arc: Item): void => {
+        (this.arcGroup.children as Item[]).forEach((arc: Item): void => {
             arc.opacity = 0;
         });
 
         this.connector.visible = false;
         this.connector.firstSegment.point = CENTER;
         this.connector.lastSegment.point = CENTER;
+        this.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
+        this.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
 
         this.getChildren().forEach((child: MenuItem): void => child.reset());
     }
@@ -933,7 +954,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             if (this.settings[SettingsGroup.ARC].stroke.enabled) {
                 this.lineGroup.addChild(
                     Arc.arcStroke(
-                        arcGeometry.firstSegment.point,
+                        arcGeometry.firstSegment.point as Point,
                         arcGeometry.fillColor as Color,
                         this.settings
                     )
@@ -944,10 +965,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
     protected resetChildColor(): void {
         this.getChildren().forEach((child: MenuItem): void => {
-            child.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].color;
+            child.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
 
             child.getChildren().forEach((childChild: MenuItem): void => {
-                childChild.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].color;
+                childChild.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
             });
         });
     };
@@ -963,7 +984,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         if (dist >= this.settings[SettingsGroup.RADII].maxClickRadius && this.settings[SettingsGroup.MAIN].enableMaxClickRadius) {
             this.resetChildColor();
-            this.arcGroup.children
+            (this.arcGroup.children as Item[])
                 .forEach((a: Item): void => {
                     if (typeof a.data.fx !== "undefined" && a.data.fx.running) {
                         a.data.fx.stop();
@@ -1005,7 +1026,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
     protected selectionLogicInGeometryOperations(): void {
         this.resetActiveHovered();
 
-        this.arcGroup.children.forEach((arc: Item): void => {
+        (this.arcGroup.children as Item[]).forEach((arc: Item): void => {
             arc.opacity = 0;
         });
 
@@ -1031,9 +1052,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.resetChildColor();
 
         this.hoveredChild = nearestChild;
-        this.hoveredChild.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
+        this.hoveredChild.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
         this.hoveredChild.getChildren().forEach((child: MenuItem): void => {
-            child.geometry.fillColor = this.settings[SettingsGroup.GEOMETRY].selectionColor;
+            child.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
         });
 
         if (this.hoveredChild.isLeaf) {
@@ -1322,7 +1343,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 new Animation({
                     target: this,
                     from: {
-                        position: this.position,
+                        position: this.position as Point,
                     },
                     to: {
                         position: this.positionDot,
@@ -1344,7 +1365,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: this,
                 from: {
-                    position: this.parent.position,
+                    position: this.parent.position as Point,
                 },
                 to: {
                     position: this.positionDot,
@@ -1353,7 +1374,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: this.geometryGroup,
                 from: {
-                    position: CENTER.subtract(this.parent.position),
+                    position: CENTER.subtract(this.parent.position as Point),
                     scaling: 0,
                 },
                 to: {
@@ -1414,10 +1435,14 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this._animations.onStop$.subscribe((): void => {
             parent.connector.lastSegment.point = CENTER;
+            parent.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
+            parent.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
         });
 
         this._animations.onFinish$.subscribe((): void => {
             parent.connector.visible = false;
+            parent.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
+            parent.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
         });
     }
 
@@ -1482,10 +1507,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: activeChild,
                 from: {
-                    position: activeChild.position
+                    position: activeChild.position as Point,
                 },
                 to: {
-                    position: itemPos
+                    position: itemPos,
                 }
             }),
             new Animation({
@@ -1507,32 +1532,13 @@ export default class MenuItem extends Group implements MenuIdentifier {
         });
 
         if (this.state === ItemState.PARENT && typeof this.activeChild !== "undefined" && this.parent instanceof MenuItem) {
-
-            //this.parent.connector.opacity = 0.25;
             this.parent.connector.strokeWidth = 2;
-            this.parent.connector.strokeColor = 'rgba(57,58,60,0.2)';
+            this.parent.connector.strokeColor = ColorFactory.fromString('rgba(57,58,60,0.2)');
             this.parent.geometry.opacity = 0.25;
             this.parent.getChildren().filter(child => child !== this).forEach(child => {
                 child.geometry.opacity = 0.25;
             });
-
-        } else {
-
         }
-        /*        if (this.parent instanceof MenuItem && this.parent.state === ItemState.PARENT) {
-                    this._animations.push(
-                        new Animation({
-                            target: this.parent.geometry,
-                            to: {
-                                fillColor: 'grey'
-                            }
-                        })
-                    );
-
-                    this.parent.getChildren().forEach(child => {
-                        child.geometry.fillColor = 'grey';
-                    });
-                }*/
     }
 
     /**
@@ -1598,7 +1604,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
     protected animateArcs(angle: number): void {
         this.arcGroup.children.forEach((arc: Item): void => {
             if (Angle.between(angle, arc.data.from, arc.data.to)) {
-                this.arcGroup.children
+                (this.arcGroup.children as Item[])
                     .filter((a: Item): boolean => a !== arc)
                     .forEach((a: Item): void => {
                         if (typeof a.data.fx !== "undefined" && a.data.fx.running) {

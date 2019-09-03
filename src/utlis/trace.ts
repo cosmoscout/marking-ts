@@ -70,7 +70,7 @@ export default class Trace {
      *
      * @type {number}
      */
-    private _timoutId: number | undefined;
+    private _timoutId: NodeJS.Timeout | undefined;
 
     /**
      * @constructor
@@ -142,7 +142,7 @@ export default class Trace {
             const insertSamples: number = dist / this.SAMPLING_DISTANCE;
             const last = this._stroke[this._stroke.length - 1];
 
-            if (typeof this._timoutId === "number") {
+            if (typeof this._timoutId === "object") {
                 clearTimeout(this._timoutId);
                 delete this._timoutId;
             }

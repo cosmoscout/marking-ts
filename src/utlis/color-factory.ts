@@ -52,7 +52,7 @@ export default class ColorFactory {
                 const firstType: string = typeof gradient[0];
                 const secondType: string = typeof gradient[1];
 
-                let colorDefinition: string | Color;
+                let colorDefinition: string;
                 let stop: number;
 
                 if (gradient.length !== 2) {
@@ -72,10 +72,10 @@ export default class ColorFactory {
                 }
 
                 if (ColorFactory.isTransparent(colorDefinition)) {
-                    colorDefinition = ColorFactory.TRANSPARENT;
+                    colorDefinition = 'rgba(255, 255, 255, 0)';
                 }
 
-                stops.push(new GradientStop(colorDefinition, stop));
+                stops.push(new GradientStop(ColorFactory.fromString(colorDefinition), stop));
             } else {
                 if (ColorFactory.isTransparent(gradient)) {
                     stops.push(new GradientStop(ColorFactory.TRANSPARENT));
@@ -83,15 +83,18 @@ export default class ColorFactory {
                     return;
                 }
 
-                stops.push(new GradientStop(gradient));
+                stops.push(new GradientStop(ColorFactory.fromString(gradient)));
             }
         });
 
         if (color.length === 1) {
-            return stops[0].color;
+            return stops[0].color as Color;
         }
 
-        return new Gradient(stops);
+        const gradient = new Gradient();
+        gradient.stops = stops;
+
+        return gradient;
     }
 
     /**

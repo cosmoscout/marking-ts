@@ -1,13 +1,14 @@
 import {fromEvent, merge, Observable, Subject} from 'rxjs';
-import {Group, PaperScope, Path, Point} from 'paper';
+import {Group, PaperScope, Path, Point, Project} from 'paper';
 import MenuItem from "./menu-item";
 import Settings from "../settings";
 import {ClickState, DragState, ItemState, SettingsGroup} from "../enums";
-import {filter, finalize, map, mergeMap, switchMap, takeUntil, tap, timeoutWith} from "rxjs/operators";
+import {filter, finalize, map, mergeMap, switchMap, takeUntil, timeoutWith} from "rxjs/operators";
 import Animation from "../../utlis/animation";
 import Trace from "../../utlis/trace";
 import {ZERO_POINT} from "../constants";
 import {DragDefinition, Input, MenuData, MenuEventDefinition, SettingsDefinition} from "../interfaces";
+import ColorFactory from "../../utlis/color-factory";
 
 declare global {
     interface Window {
@@ -240,6 +241,10 @@ export default class Menu implements MenuData {
      * @return {HTMLCanvasElement}
      */
     public get canvas(): HTMLCanvasElement {
+        if (typeof this._canvas === "undefined") {
+            throw new Error("Canvas not initialized in menu");
+        }
+
         return this._canvas;
     }
 
@@ -349,16 +354,12 @@ export default class Menu implements MenuData {
      * @throws {Error} If the paper canvas is not initialized
      */
     private setupScope(): void {
-        if (typeof this._canvas === "undefined") {
-            throw new Error(`Canvas not initialized.`);
-        }
-
         this._scope = new PaperScope();
         this._scope.settings.insertItems = false;
         this._scope.settings.applyMatrix = false;
         this._scope.activate();
-        this._scope.setup(this._canvas);
-        this._scope.project.currentStyle = this._settings.projectStyle;
+        this._scope.setup(this.canvas);
+        (this._scope.project as Project).currentStyle = this._settings.projectStyle;
     }
 
 
@@ -432,12 +433,7 @@ export default class Menu implements MenuData {
         const inputDown = this.createObserver('pointerdown');
         const inputLeave = merge(this.createObserver('pointerleave'), this.createObserver('pointerout'));
 
-        inputDown.pipe(tap((e: Input) => {
-/*            this.inputPosition$.next(new Point(
-                e.x,
-                e.y
-            ));*/
-        })).subscribe(this.inputActivation$);
+        inputDown.subscribe(this.inputActivation$);
         inputUp.subscribe(this.inputDeactivation$);
         inputLeave.subscribe(this.inputDeactivation$);
 
@@ -508,17 +504,17 @@ export default class Menu implements MenuData {
             throw new Error(`Scope not set`);
         }
 
-        this._scope.project.activeLayer.addChild(this._traceVisGroup);
+        (this._scope.project as Project).activeLayer.addChild(this._traceVisGroup);
 
         this._trace.onDecisionPoint$.subscribe((point): void => {
             const p = new Path.Circle(point, 5);
-            p.fillColor = 'green';
+            p.fillColor = ColorFactory.fromString('green');
             (this._traceVisGroup as Group).addChild(p);
         });
 
         (this._dragging$ as Observable<DragDefinition>).subscribe((drag: DragDefinition): void => {
             const p = new Path.Circle(drag.position, 2);
-            p.fillColor = 'black';
+            p.fillColor = ColorFactory.fromString('black');
             (this._traceVisGroup as Group).addChild(p);
         });
     }

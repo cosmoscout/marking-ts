@@ -259,7 +259,11 @@ export default class Ribbonslider extends MenuItem {
             'rgba(32, 32, 32, 0)',
         ]) as Gradient;
 
-        this.gradient.fillColor = new Color(gradient, this.gradient.bounds.leftCenter, this.gradient.bounds.rightCenter);
+        this.gradient.fillColor = new Color(
+            gradient,
+            this.gradient.bounds.leftCenter,
+            this.gradient.bounds.rightCenter
+        );
     }
 
     /**
@@ -339,8 +343,10 @@ export default class Ribbonslider extends MenuItem {
      */
     private setupRibbonContent(): void {
         const onMouseEnterPointer = (e: MouseEvent) => {
-            e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
-            this.menu.canvas.style.cursor = "pointer";
+            if (!this.hasLock) {
+                e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
+                this.menu.canvas.style.cursor = "pointer";
+            }
         };
         const onMouseLeave = () => {
             this.menu.canvas.style.cursor = "default";
@@ -479,7 +485,7 @@ export default class Ribbonslider extends MenuItem {
     }
 
     /**
-     * Moves the
+     * Moves the Ribbon to a given position of a slider value
      * @param value
      */
     public moveRibbonToValuePosition(value: number): void {
@@ -506,6 +512,7 @@ export default class Ribbonslider extends MenuItem {
         super.setGroupsVisibility();
         this.lineGroup.visible = false;
         this.arcGroup.visible = false;
+
         this.text.visible = true;
         this.icon.opacity = 0;
 
@@ -517,8 +524,8 @@ export default class Ribbonslider extends MenuItem {
     protected animateStateActive(): void {
         super.animateStateActive();
         this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
-        (this.parent as MenuItem).connector.strokeWidth = 2;
-        (this.parent as MenuItem).connector.strokeColor = ColorFactory.fromString('rgba(57,58,60,0.2)');
+        /*(this.parent as MenuItem).connector.strokeWidth = 2;
+        (this.parent as MenuItem).connector.strokeColor = ColorFactory.fromString('rgba(57,58,60,0.2)');*/
     }
 
     protected selectionLogicBackOperations() {
@@ -538,7 +545,7 @@ export default class Ribbonslider extends MenuItem {
 
         this.value = this.configuration.initial;
         this.moveRibbonToValuePosition(this.value);
-        this.geometryGroup.addChild(this.createIndicatorCaret());
+        this.ribbonMaskGroup.addChild(this.createIndicatorCaret());
     }
 
     /**

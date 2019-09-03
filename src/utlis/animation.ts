@@ -285,7 +285,7 @@ export default class Animation implements IAnimation {
         if (typeof animation.from === "undefined") {
             // @ts-ignore
             return this._target.tweenTo(
-                this._to,
+                this._to as object,
                 {
                     duration: this._options.duration,
                     easing: this._options.easing,
@@ -295,7 +295,7 @@ export default class Animation implements IAnimation {
         } else if (typeof animation.to === "undefined") {
             // @ts-ignore
             return this._target.tweenFrom(
-                this._from,
+                this._from as object,
                 {
                     duration: this._options.duration,
                     easing: this._options.easing,
@@ -305,8 +305,8 @@ export default class Animation implements IAnimation {
         } else {
             // @ts-ignore
             return this._target.tween(
-                this._from,
-                this._to,
+                this._from as object,
+                this._to as object,
                 {
                     duration: this._options.duration,
                     easing: this._options.easing,
@@ -546,9 +546,9 @@ export class AnimationGroup extends Animation {
      * @see {reset}
      */
     private resetSubjects(): void {
-        this._onStart$ = new Subject<Tween>();
-        this._onStop$ = new Subject<Tween>();
-        this._onFinish$ = new Subject<Tween>();
+        this._onStart$ = new Subject<Array<Tween>>();
+        this._onStop$ = new Subject<Array<Tween>>();
+        this._onFinish$ = new Subject<Array<Tween>>();
         this._onUpdate$ = new Subject<AnimationProgress>();
         this._onUpdateGroup$ = new Subject<AnimationProgress>();
     }
