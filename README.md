@@ -161,7 +161,7 @@ The menu structure is defined in JSON.
             id: 'documents',
             text: 'Dokumente',
             icon: 'file-signature',
-            direction: 135,
+            direction: 270,
         }
     ]
 }
