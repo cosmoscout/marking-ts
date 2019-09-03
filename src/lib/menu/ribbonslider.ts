@@ -375,6 +375,10 @@ export default class Ribbonslider extends MenuItem {
         return;
     }
 
+    protected getChildren(): Array<MenuItem> {
+        return [];
+    }
+
 
     /**
      * Creates the main ribbon and sets up the content
