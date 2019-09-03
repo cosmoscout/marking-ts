@@ -1,4 +1,4 @@
-import {Color, CompoundPath, Group, Item, Path, Point, PointText} from 'paper';
+import {Color, CompoundPath, Group, Item, Path, Point, PointText, Rectangle} from 'paper';
 import {Observable, Subject, Subscription} from "rxjs";
 import {distinctUntilChanged, map} from "rxjs/operators";
 import Angle from '../../utlis/angle';
@@ -777,8 +777,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.text.scaling = DEFAULT_SCALE;
         this.text.content = content;
 
+        // @ts-ignore
         if (this.text.bounds.size.width + 10 > this.geometry.bounds.size.width) {
-            this.text.fitBounds(this.geometry.bounds.scale(MenuItem.TEXT_OVERFLOW_SCALE));
+            this.text.fitBounds((this.geometry.bounds as Rectangle).scale(MenuItem.TEXT_OVERFLOW_SCALE));
         }
     }
 
@@ -1238,7 +1239,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         const to = {
             scaling: 0,
-            position: CENTER.subtract(this.position).add(this.position.multiply(this.settings[SettingsGroup.SCALES].dot))
+            // @ts-ignore
+            position: CENTER.subtract(this.position as Point).add((this.position as Point).multiply(this.settings[SettingsGroup.SCALES].dot))
         };
 
         this._animations.push(
@@ -1365,6 +1367,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: this,
                 from: {
+                    // @ts-ignore
                     position: this.parent.position as Point,
                 },
                 to: {
@@ -1374,7 +1377,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: this.geometryGroup,
                 from: {
-                    position: CENTER.subtract(this.parent.position as Point),
+                    // @ts-ignore
+                    position: CENTER.subtract((this.parent as Item).position as Point),
                     scaling: 0,
                 },
                 to: {
@@ -1395,11 +1399,11 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         let rootPos = this.menu.inputPosition;
         if (!parent.isRoot) {
-            rootPos = this.root.position.add(parent.globalToLocal(this.menu.inputPosition)).floor();
-            (this.parent.parent as MenuItem).connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
-            (this.parent.parent as MenuItem).connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
-            this.parent.parent.geometry.opacity = 1;
-            this.parent.parent.getChildren().forEach(child => {
+            rootPos = (this.root.position as Point).add(parent.globalToLocal(this.menu.inputPosition)).floor();
+            ((this.parent as MenuItem).parent as MenuItem).connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
+            ((this.parent as MenuItem).parent as MenuItem).connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
+            ((this.parent as MenuItem).parent as MenuItem).geometry.opacity = 1;
+            ((this.parent as MenuItem).parent as MenuItem).getChildren().forEach((child: MenuItem) => {
                 child.geometry.opacity = 1;
             });
         }
@@ -1456,6 +1460,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: this,
                 to: {
+                    // @ts-ignore
                     position: this.position.normalize(this.settings[SettingsGroup.RADII].dot),
                 }
             }),
@@ -1486,12 +1491,12 @@ export default class MenuItem extends Group implements MenuIdentifier {
         let itemPos = REFERENCE_POINT.clone();
         itemPos.angleInRadians = activeChild.angle - Angle.HALF_CIRCLE_RAD / 2;
 
-        itemPos.x = Math.abs(itemPos.x) < Number.EPSILON ? 0 : itemPos.x;
-        itemPos.y = Math.abs(itemPos.y) < Number.EPSILON ? 0 : itemPos.y;
+        itemPos.x = Math.abs(itemPos.x as number) < Number.EPSILON ? 0 : itemPos.x;
+        itemPos.y = Math.abs(itemPos.y as number) < Number.EPSILON ? 0 : itemPos.y;
 
         itemPos.length = localMousePos.multiply(itemPos).length;
 
-        if (itemPos.length < this.settings[SettingsGroup.MAIN].minDistance) {
+        if ((itemPos.length as number) < this.settings[SettingsGroup.MAIN].minDistance) {
             itemPos.length = this.settings[SettingsGroup.MAIN].minDistance;
         }
 
@@ -1501,7 +1506,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: this.root,
                 to: {
-                    position: this.root.position.add(parentDelta).floor()
+                    position: (this.root.position as Point).add(parentDelta).floor()
                 }
             }),
             new Animation({
@@ -1606,7 +1611,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * @param angle
      */
     protected animateArcs(angle: number): void {
-        this.arcGroup.children.forEach((arc: Item): void => {
+        (this.arcGroup.children as Item[]).forEach((arc: Item): void => {
             if (Angle.between(angle, arc.data.from, arc.data.to)) {
                 (this.arcGroup.children as Item[])
                     .filter((a: Item): boolean => a !== arc)
@@ -1617,7 +1622,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
                         a.opacity = 0;
                     });
 
-                if (arc.opacity < 1 && !arc.data.fx.running) {
+                if ((arc.opacity as number) < 1 && !arc.data.fx.running) {
                     arc.data.fx.initialize({
                         target: arc,
                         to: {

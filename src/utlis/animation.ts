@@ -93,6 +93,7 @@ export default class Animation implements IAnimation {
     private _to: AnimatableData | undefined;
 
     // Tween instance
+    // @ts-ignore
     private _tween: Tween;
 
     // Ready flag
@@ -146,7 +147,7 @@ export default class Animation implements IAnimation {
             return this._onUpdate$;
         }
 
-        return;
+        return undefined;
     }
 
     /**
@@ -160,6 +161,7 @@ export default class Animation implements IAnimation {
         }
 
         if (typeof this._tween !== "undefined") {
+            // @ts-ignore
             this._tween.duration = duration;
         }
     }
@@ -184,6 +186,7 @@ export default class Animation implements IAnimation {
         }
 
         if (typeof this._tween !== "undefined") {
+            // @ts-ignore
             this._tween.easing = easing;
         }
     }
@@ -195,6 +198,7 @@ export default class Animation implements IAnimation {
      */
     public get running(): boolean {
         if (typeof this._tween !== "undefined") {
+            // @ts-ignore
             return this._tween.running;
         }
 
@@ -220,6 +224,7 @@ export default class Animation implements IAnimation {
 
         this._tween = this.createTween(animation);
 
+        // @ts-ignore
         this._onUpdate$ = fromEvent(this._tween, 'update');
 
         this._tween.then((): void => {
@@ -253,6 +258,7 @@ export default class Animation implements IAnimation {
      * @param {boolean} [goToEnd=true] Set the objects state to "to"
      */
     public stop(goToEnd: boolean = true): void {
+        // @ts-ignore
         if (typeof this._tween !== "undefined" && this._tween.running) {
             this._onStop$.next(this._tween);
             this._tween.stop();
@@ -375,9 +381,13 @@ export default class Animation implements IAnimation {
  */
 export class AnimationGroup extends Animation {
     // Observables
+    // @ts-ignore
     protected _onStart$: Subject<Array<Tween>> = new Subject<Array<Tween>>();
+    // @ts-ignore
     protected _onStop$: Subject<Array<Tween>> = new Subject<Array<Tween>>();
+    // @ts-ignore
     protected _onFinish$: Subject<Array<Tween>> = new Subject<Array<Tween>>();
+    // @ts-ignore
     protected _onUpdate$: Subject<AnimationProgress> = new Subject<AnimationProgress>();
     private _onUpdateGroup$: Subject<AnimationProgress> = new Subject<AnimationProgress>();
 
@@ -417,6 +427,7 @@ export class AnimationGroup extends Animation {
      *
      * @return {Observable<Array<Tween>>}
      */
+    // @ts-ignore
     public get onStart$(): Observable<Array<Tween>> {
         return this._onStart$.asObservable();
     }
@@ -426,6 +437,7 @@ export class AnimationGroup extends Animation {
      *
      * @return {Observable<Array<Tween>>}
      */
+    // @ts-ignore
     public get onStop$(): Observable<Array<Tween>> {
         return this._onStop$.asObservable();
     }
@@ -435,6 +447,7 @@ export class AnimationGroup extends Animation {
      *
      * @return {Observable<Array<Tween>>}
      */
+    // @ts-ignore
     public get onFinish$(): Observable<Array<Tween>> {
         return this._onFinish$.asObservable();
     }
@@ -513,6 +526,7 @@ export class AnimationGroup extends Animation {
             }
 
             if (typeof this._options.easing !== "undefined") {
+                // @ts-ignore
                 animation.easing = typeof this._options.easing === "function" ? this._options.easing : Tween.easings[this._options.easing];
 
             }

@@ -359,6 +359,7 @@ export default class Menu implements MenuData {
         this._scope.settings.applyMatrix = false;
         this._scope.activate();
         this._scope.setup(this.canvas);
+        //@ts-ignore
         (this._scope.project as Project).currentStyle = this._settings.projectStyle;
     }
 

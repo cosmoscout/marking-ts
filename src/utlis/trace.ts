@@ -149,7 +149,12 @@ export default class Trace {
 
             for (let i = 1; i <= dist / this.SAMPLING_DISTANCE; ++i) {
                 let t: number = i / insertSamples;
-                this._stroke.push(new Point(t * position.x + (1 - t) * last.x, t * position.y + (1 - t) * last.y));
+                this._stroke.push(
+                    new Point(
+                        t * (position.x as number) + (1 - t) * (last.x as number),
+                        t * (position.y as number) + (1 - t) * (last.y as number)
+                    )
+                );
             }
 
             const strokes = this._stroke.length;
@@ -180,8 +185,8 @@ export default class Trace {
     private getStrokeDirection(): Point {
         return this._stroke.reduce((total: Point, current: Point, currentIndex: number): Point => {
             if (currentIndex > 0) {
-                total.x += current.x / (this._stroke.length - 1);
-                total.y += current.y / (this._stroke.length - 1);
+                (total.x as number) += (current.x as number) / (this._stroke.length - 1);
+                (total.y as number) += (current.y as number) / (this._stroke.length - 1);
             }
 
             return total;
@@ -195,6 +200,6 @@ export default class Trace {
      * @param {Point} p2
      */
     private static angle(p1: Point, p2: Point): number {
-        return Math.acos(p1.dot(p2) / (p1.length * p2.length));
+        return Math.acos(p1.dot(p2) / ((p1.length as number) * (p2.length as number)));
     }
 }

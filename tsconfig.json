@@ -16,6 +16,8 @@
     "strict": true,
     "alwaysStrict": true,
     "moduleResolution": "node",
+    // Paper TS Definitions are fucked
+    "strictNullChecks": false,
     "removeComments": true
   },
   "include": [

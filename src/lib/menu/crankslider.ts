@@ -5,6 +5,7 @@ import {DragDefinition} from "../interfaces";
 import {REFERENCE_POINT, ZERO_POINT} from "../constants";
 import {ClickState, DragState, ItemState, SettingsGroup} from "../enums";
 import Animation from "../../utlis/animation";
+import ColorFactory from "../../utlis/color-factory";
 
 
 export default class Crankslider extends MenuItem {
@@ -101,8 +102,8 @@ export default class Crankslider extends MenuItem {
     }
 
     protected navigateBack(): void {
-        this.parent.connector.strokeColor = '#393a3c';
-        this.parent.connector.strokeWidth = 10;
+        (this.parent as MenuItem).connector.strokeColor = ColorFactory.fromString('#393a3c');
+        (this.parent as MenuItem).connector.strokeWidth = 10;
         super.navigateBack();
     }
 
@@ -188,14 +189,7 @@ export default class Crankslider extends MenuItem {
 
     protected animateStateActive(): void {
         super.animateStateActive();
-        this.parent.connector.strokeWidth = 2;
-        this.parent.connector.strokeColor = 'rgba(57,58,60,0.2)';
-
-        /*        this._animations.push(new Animation({
-                    target: this.geometry,
-                    to: {
-                        scaling: new Point(10, 0.51)
-                    }
-                }));*/
+        (this.parent as MenuItem).connector.strokeWidth = 2;
+        (this.parent as MenuItem).connector.strokeColor = ColorFactory.fromString('rgba(57,58,60,0.2)');
     }
 }

@@ -1,5 +1,5 @@
 import MenuItem from "./menu-item";
-import {Color, Gradient, Group, MouseEvent, Path, Point, PointText, Symbol} from 'paper';
+import {Color, Gradient, Group, Item, Path, Point, PointText, SymbolDefinition, MouseEvent as PaperMouseEvent} from 'paper';
 import {ZERO_POINT} from "../constants";
 import {ClickState, DragState, ItemState, SettingsGroup} from "../enums";
 import {DragDefinition, SliderDefinition} from "../interfaces";
@@ -47,7 +47,7 @@ export default class Ribbonslider extends MenuItem {
      * 3x4 Grab dots
      * Use as grabDot.place(Position)
      */
-    private _grabDot: Symbol | undefined;
+    private _grabDot: SymbolDefinition | undefined;
 
     /**
      * Group holding the fade out mask and ribbon group
@@ -184,7 +184,7 @@ export default class Ribbonslider extends MenuItem {
      *
      * @see {_grabDot}
      */
-    private get grabDot(): Symbol {
+    private get grabDot(): SymbolDefinition {
         if (typeof this._grabDot === "undefined") {
             throw new Error("Grab Dot Group not initialized");
         }
@@ -404,7 +404,7 @@ export default class Ribbonslider extends MenuItem {
      * Adds the grab dots and value texts to the ribbon
      */
     private setupRibbonContent(): void {
-        const onMouseEnterPointer = (e: MouseEvent) => {
+        const onMouseEnterPointer = (e: PaperMouseEvent) => {
             if (!this.hasLock) {
                 e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
                 this.menu.canvas.style.cursor = "pointer";
@@ -416,7 +416,7 @@ export default class Ribbonslider extends MenuItem {
         const onMouseEnterResize = () => {
             this.menu.canvas.style.cursor = "ew-resize";
         };
-        const textOnClick = (e: MouseEvent) => {
+        const textOnClick = (e: PaperMouseEvent) => {
             this.updateRibbonPosition(-(e.target.position.x + this.ribbonGroup.position.x - Ribbonslider.GRADIENT_LENGTH / 2), true);
             this.value = e.target.data.value;
         };
@@ -429,7 +429,7 @@ export default class Ribbonslider extends MenuItem {
                 valueText.content = '' + stepValue;
                 valueText.data.value = stepValue;
                 valueText.onMouseEnter = onMouseEnterPointer;
-                valueText.onMouseLeave = (e: MouseEvent) => {
+                valueText.onMouseLeave = (e: PaperMouseEvent) => {
                     onMouseLeave();
                     e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].text.color);
                 };
@@ -439,6 +439,7 @@ export default class Ribbonslider extends MenuItem {
                 let dots = this.grabDot.place(new Point(i * (this.configuration.stepDist / 2) + Ribbonslider.GRADIENT_LENGTH / 2, Ribbonslider.RIBBON_HEIGHT / 2));
                 dots.onMouseEnter = onMouseEnterResize;
 
+                // @ts-ignore
                 this.ribbonGroup.addChild(dots);
             }
         }
@@ -473,7 +474,7 @@ export default class Ribbonslider extends MenuItem {
      */
     private setupGrabDotSymbol(): void {
         let grabDotGroup = new Group();
-        let dots = Array<Path.Circle>();
+        let dots = Array<Item>();
 
         let circle = new Path.Circle(ZERO_POINT, 3);
         circle.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].stroke.color);
@@ -491,7 +492,7 @@ export default class Ribbonslider extends MenuItem {
         }
         grabDotGroup.pivot = grabDotGroup.bounds.center;
 
-        this._grabDot = new Symbol(grabDotGroup);
+        this._grabDot = new SymbolDefinition(grabDotGroup);
     }
 
     /**
@@ -525,7 +526,7 @@ export default class Ribbonslider extends MenuItem {
         caret.rotate(Angle.toDeg(Math.PI));
         caret.segments[1].point = caret.segments[1].point.add(new Point(0, 3));
         caret.strokeWidth = 0;
-        caret.fillColor = this.settings[SettingsGroup.GEOMETRY].stroke.color;
+        caret.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].stroke.color);
         caret.position = (this.geometry.bounds.topCenter.add(new Point(0, 1)));
 
         return caret;
@@ -586,7 +587,7 @@ export default class Ribbonslider extends MenuItem {
      * @see {updateRibbonPosition}
      * @see {value}
      */
-    private pointerLockListener = (event: NativeMouseEvent) => {
+    private pointerLockListener = (event: MouseEvent) => {
         if (event.movementX != 0) {
             const value = this.configuration.min - (this.ribbonGroup.position.x / this.configuration.stepDist) * this.configuration.stepSize;
             const numberPrecision = precision(this.configuration.stepSize);

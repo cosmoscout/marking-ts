@@ -29,8 +29,8 @@ export function roundNumber(num: number, scale: number): number {
             sig = "+";
         }
 
-        return +(Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) + "e-" + scale);
+        return +(Math.round(Number(+arr[0] + "e" + sig + (+arr[1] + scale))) + "e-" + scale);
     } else {
-        return +(Math.round(num + "e+" + scale) + "e-" + scale);
+        return +(Math.round(Number(num + "e+" + scale)) + "e-" + scale);
     }
 }
