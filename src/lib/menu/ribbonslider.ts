@@ -1,5 +1,15 @@
 import MenuItem from "./menu-item";
-import {Color, Gradient, Group, Item, Path, Point, PointText, SymbolDefinition, MouseEvent as PaperMouseEvent} from 'paper';
+import {
+    Color,
+    Gradient,
+    Group,
+    Item,
+    MouseEvent as PaperMouseEvent,
+    Path,
+    Point,
+    PointText,
+    SymbolDefinition
+} from 'paper';
 import {ZERO_POINT} from "../constants";
 import {ClickState, DragState, ItemState, SettingsGroup} from "../enums";
 import {DragDefinition, SliderDefinition} from "../interfaces";
@@ -231,13 +241,30 @@ export default class Ribbonslider extends MenuItem {
     /**
      * Moves the Ribbon to a given position of a slider value
      * @param value
+     * @param animated True if movement should be animated
      */
-    public moveRibbonToValuePosition(value: number): void {
+    public moveRibbonToValuePosition(value: number, animated = false): void {
         if (value > this.configuration.max || value < this.configuration.min) {
             throw RangeError(`Slider (${this.itemId}): 'value' out of slider range`);
         }
 
-        this.ribbonGroup.position.x = -(this.configuration.stepDist * ((value - this.configuration.min) / this.configuration.stepSize));
+        const positionX = -(this.configuration.stepDist * ((value - this.configuration.min) / this.configuration.stepSize));
+
+        // Todo consolidate into separate method
+        if (animated) {
+            new Animation({
+                target: this.ribbonGroup,
+                to: {
+                    'position.x': positionX
+                },
+                options: {
+                    duration: this.settings[SettingsGroup.MAIN].animationDuration,
+                    easing: 'easeInCubic'
+                }
+            }).start();
+        } else {
+            this.ribbonGroup.position.x = positionX;
+        }
     }
 
 
@@ -284,6 +311,7 @@ export default class Ribbonslider extends MenuItem {
             document.exitPointerLock();
             this.ribbon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
             document.removeEventListener('mousemove', this.pointerLockListener);
+            this.moveRibbonToValuePosition(this.value, true);
             this.hasLock = false;
         }
 
