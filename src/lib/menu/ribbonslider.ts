@@ -11,7 +11,7 @@ import {
     SymbolDefinition
 } from 'paper';
 import {ZERO_POINT} from "../constants";
-import {ClickState, DragState, ItemState, SettingsGroup} from "../enums";
+import {ClickState, DragState, ItemState, MenuItemEventType, SettingsGroup} from "../enums";
 import {DragDefinition, SliderDefinition} from "../interfaces";
 import ColorFactory from "../../utlis/color-factory";
 import throttle from 'lodash/throttle'
@@ -265,6 +265,9 @@ export default class Ribbonslider extends MenuItem {
         } else {
             this.ribbonGroup.position.x = positionX;
         }
+        this.event(MenuItemEventType.SLIDER_VALUE_CHANGED, this, {
+            'value': value,
+        });
     }
 
 
@@ -512,8 +515,8 @@ export default class Ribbonslider extends MenuItem {
         circle.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].stroke.color);
         circle.strokeWidth = 0;
 
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 3; j++) {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 2; j++) {
                 let c = circle.clone();
                 c.position = ZERO_POINT.add(new Point(j * 10, i * 10));
                 dots.push(c);
@@ -610,6 +613,10 @@ export default class Ribbonslider extends MenuItem {
         } else {
             this.ribbonGroup.position.x = positionX;
         }
+
+        this.event(MenuItemEventType.SLIDER_VALUE_CHANGED, this, {
+            'value': this.value,
+        });
     }
 
     /**

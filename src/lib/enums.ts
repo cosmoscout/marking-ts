@@ -40,6 +40,8 @@ export enum MenuItemEventType {
     BACK_HOVER = 'navigationBackHover',
     HOVER = 'itemHover',
     HOVER_SELECTION = 'itemSelectionHover',
+
+    SLIDER_VALUE_CHANGED = 'sliderValueChanged'
 }
 
 
