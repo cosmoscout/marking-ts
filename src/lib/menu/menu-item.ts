@@ -171,7 +171,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this._inputAngle$ = this.menu.inputPosition$.pipe(
             map(this.angleToReferencePoint.bind(this)),
-            distinctUntilChanged((previousAngle, currentAngle): boolean => {
+            distinctUntilChanged((previousAngle: number, currentAngle: number): boolean => {
                 return Math.round(Angle.toDeg(previousAngle)) === Math.round(Angle.toDeg(currentAngle));
             })
         );
@@ -854,9 +854,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
      *
      * @param {MenuItemEventType} type The event type
      * @param {MenuItem} [target] Target menu item
+     * @param data
      */
-    protected event(type: MenuItemEventType, target?: MenuItem): void {
-        const event = new MenuEvent(type, this, target);
+    protected event(type: MenuItemEventType, target?: MenuItem, data?: Record<string, string | number>): void {
+        const event = new MenuEvent(type, this, target, data);
 
         if (typeof this._prevEvent === "undefined" || !event.equals(this._prevEvent)) {
             this.root._selectionSubject$.next(event);

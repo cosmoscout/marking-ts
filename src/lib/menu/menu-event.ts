@@ -9,20 +9,24 @@ export default class MenuEvent implements MenuEventDefinition {
     public readonly type: MenuItemEventType;
     public readonly source: MenuIdentifier;
     public readonly target: MenuIdentifier | undefined;
+    public readonly data: Record<string, string | number> | undefined;
 
     /**
      * @constructor
      * @param {MenuItemEventType} type The event type
      * @param {MenuIdentifier} source The source MenuItem
      * @param {MenuIdentifier} [target] The target MenuItem
+     * @param data
      * @see {MenuItem}
      */
-    public constructor(type: MenuItemEventType, source: MenuIdentifier, target?: MenuIdentifier) {
+    public constructor(type: MenuItemEventType, source: MenuIdentifier, target?: MenuIdentifier, data?: Record<string, string | number>) {
         this.type = type;
         this.source = {
             itemId: source.itemId,
             angle: Angle.toDeg(source.angle),
         };
+
+        this.data = data;
 
         if (typeof target !== "undefined") {
             this.target = {
@@ -52,6 +56,8 @@ export default class MenuEvent implements MenuEventDefinition {
         } else {
             targetEquals = true;
         }
+
+        return false;
 
         return selectionTypeEquals && targetEquals && sourceEquals;
     }
