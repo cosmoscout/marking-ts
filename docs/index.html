@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Marking-TS Demo</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: linear-gradient(336deg, rgba(62, 57, 115, 0.8), rgba(62, 57, 115, 0) 60%),
+            linear-gradient(217deg, rgba(234, 171, 99, 1), rgba(234, 171, 99, 0) 70%),
+            linear-gradient(312deg, rgba(76, 140, 215, 0), rgba(76, 140, 215, 0.5) 80%),
+            linear-gradient(396deg, rgba(62, 57, 115, 0.8), rgba(62, 57, 115, 0) 55%);
+            background-size: cover;
+            overflow: hidden;
+        }
+
+        canvas[data-paper-resize] {
+            width: 100%;
+            height: 100%;
+        }
+
+        .info {
+            padding: 1rem;
+            pointer-events: none;
+            position: absolute;
+        }
+
+    </style>
+    <script src="https://unpkg.com/lodash"></script>
+    <script src="https://unpkg.com/paper"></script>
+
+</head>
+<body>
+    <div class="info">
+        <code>
+            Click or drag on the page to activate the menu.<br>
+            Right-Click to navigate back or hide the menu.<br>
+            F12 to view menu status and selections.
+        </code>
+    </div>
+<script>
+    window.onload = () => {
+
+        const menu = new MarkingTS.Menu('body', {
+            main: {
+                animationDuration: 200,
+                enableMaxClickRadius: false
+            },
+            geometry: {
+                stroke: {
+                    enabled: true
+                }
+            }
+        });
+
+        const struct = {
+            id: 'Root',
+            text: 'Menu',
+            direction: 0,
+            icon: 'bars',
+            children: [
+                {
+                    id: 'file',
+                    text: 'Grimace',
+                    icon: 'grimace',
+                    direction: 0,
+                },
+                {
+                    id: 'tools',
+                    text: 'Tools',
+                    icon: 'tools',
+                    direction: 45,
+                    children: [
+                        {
+                            id: 't1',
+                            text: 'Word',
+                            icon: 'file-word',
+                            direction: 0
+                        },
+                        {
+                            id: 't2',
+                            text: 'Excel',
+                            icon: 'file-excel',
+                            direction: 90
+                        },
+                        {
+                            id: 't3',
+                            text: 'PowerPoint',
+                            icon: 'file-powerpoint',
+                            direction: 180
+                        },
+                        {
+                            id: 't4',
+                            text: 'Access',
+                            icon: 'file-csv',
+                            direction: 270
+                        }
+                    ]
+                },
+                {
+                    id: 'project',
+                    text: 'Project',
+                    icon: 'project-diagram',
+                    direction: 90,
+                    children: [
+                        {
+                            id: 'p1',
+                            text: 'Word',
+                            icon: 'file-word',
+                            direction: 45
+                        },
+                        {
+                            id: 'p2',
+                            text: 'Excel',
+                            icon: 'file-excel',
+                            direction: 135
+                        },
+                        {
+                            id: 'p3',
+                            text: 'PowerPoint',
+                            icon: 'file-powerpoint',
+                            direction: 225
+                        },
+                        {
+                            id: 'p4',
+                            text: 'Access',
+                            icon: 'file-csv',
+                            direction: 315
+                        }
+                    ]
+                },
+                {
+                    id: 'documents',
+                    text: 'Documents',
+                    icon: 'file-signature',
+                    direction: 135,
+                    children: [
+                        {
+                            id: 'documents-folder',
+                            text: 'Open',
+                            icon: 'folder-open',
+                            direction: 60
+                        },
+                        {
+                            id: 'book-dead',
+                            text: 'Don\t open',
+                            icon: 'book-dead',
+                            direction: 225
+                        }
+                    ]
+                },
+                {
+                    id: 'help',
+                    text: 'Help',
+                    icon: 'question',
+                    direction: 180
+                },
+                {
+                    id: 'search',
+                    text: 'Search',
+                    icon: 'search',
+                    direction: 225,
+                    children: [
+                        {
+                            id: 's1',
+                            text: 'New search',
+                            icon: 'search-plus',
+                            direction: 90
+                        },
+                        {
+                            id: 's2',
+                            text: 'Delete Search',
+                            icon: 'search-minus',
+                            direction: 180
+                        },
+                        {
+                            id: 's3',
+                            text: 'Search location',
+                            icon: 'search-location',
+                            direction: 315
+                        }
+                    ]
+                },
+                {
+                    id: 'view',
+                    text: 'View',
+                    icon: 'eye',
+                    direction: 270,
+                    children: [
+                        {
+                            id: 'e1',
+                            text: 'Fullscreen',
+                            icon: 'compress',
+                            direction: 0
+                        },
+                        {
+                            id: 'e2',
+                            text: 'Highlight',
+                            icon: 'highlighter',
+                            direction: 180,
+                            children: [
+                                {
+                                    id: 'auszeichnung',
+                                    text: 'Spell check',
+                                    icon: 'spell-check',
+                                    direction: 45,
+                                    children: [
+                                        {
+                                            id: 'BibTex',
+                                            text: 'BibTex',
+                                            icon: 'book',
+                                            direction: 0
+                                        },
+                                        {
+                                            id: 'xslt',
+                                            text: 'XSLT',
+                                            icon: 'vial',
+                                            direction: 90
+                                        },
+                                        {
+                                            id: 'xml',
+                                            text: 'XML',
+                                            icon: 'file-code',
+                                            direction: 180
+                                        },
+                                        {
+                                            id: 'latex',
+                                            text: 'Latex',
+                                            icon: 'text-height',
+                                            direction: 270
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: 'science',
+                                    text: 'Science',
+                                    icon: 'vial',
+                                    direction: 135
+                                },
+                                {
+                                    id: 'code',
+                                    text: 'Code',
+                                    icon: 'code-branch',
+                                    direction: 225
+                                },
+                                {
+                                    id: 'text',
+                                    text: 'Text',
+                                    icon: 'font',
+                                    direction: 315
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'edit',
+                    text: 'Edit',
+                    icon: 'edit',
+                    direction: 315,
+                    children: [
+                        {
+                            id: 'ed1',
+                            text: 'Edit user',
+                            icon: 'user-edit',
+                            direction: 45
+                        },
+                        {
+                            id: 'ed2',
+                            text: 'Generic Edit',
+                            icon: 'edit',
+                            direction: 180
+                        },
+                        {
+                            id: 'ed3',
+                            text: 'Highlight',
+                            icon: 'highlighter',
+                            direction: 270
+                        }
+                    ]
+                }
+            ]
+        };
+
+        menu.init();
+        menu.setStructure(MarkingTS.MenuParser.parse(struct));
+        console.log(`Itemcount: ${menu._rootItem.childCount}`);
+        menu.selection$.subscribe(s => {
+            console.log(s);
+        });
+
+        window.menu = menu;
+    };
+
+</script>
+<script type="text/javascript" src="1.marking-ts.js"></script><script type="text/javascript" src="marking-ts.js"></script></body>
+</html>
