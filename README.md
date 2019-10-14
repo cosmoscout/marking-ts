@@ -129,7 +129,7 @@ The menu structure is defined in JSON.
 * `icon`: Font-Aweseome icon name
 * `children`: Optional array with item definitions
 
-````json
+````
 {
     // There can only be one topmost menu item!
     id: 'Root',
@@ -194,7 +194,7 @@ Each event object contains three readonly members:
 
 ## Ribbonslider
 Definition:
-```json
+```
 {
     id: 'slider',
     text: 'Ribbonslider',
