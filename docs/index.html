@@ -47,7 +47,6 @@
         const menu = new MarkingTS.Menu('body', {
             main: {
                 animationDuration: 200,
-                enableMaxClickRadius: false
             },
             geometry: {
                 stroke: {
@@ -63,10 +62,18 @@
             icon: 'bars',
             children: [
                 {
-                    id: 'file',
-                    text: 'Grimace',
-                    icon: 'grimace',
+                    id: 'slider',
+                    text: 'Ribbonslider',
+                    icon: 'sliders-h',
                     direction: 0,
+                    type: 'ribbonslider',
+                    data: {
+                        min: -100,
+                        max: 100,
+                        initial: 0,
+                        stepSize: 10,
+                        stepDist: 200
+                    }
                 },
                 {
                     id: 'tools',
