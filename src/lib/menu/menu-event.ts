@@ -9,7 +9,7 @@ export default class MenuEvent implements MenuEventDefinition {
     public readonly type: MenuItemEventType;
     public readonly source: MenuIdentifier;
     public readonly target: MenuIdentifier | undefined;
-    public readonly data: Record<string, string | number> | undefined;
+    public readonly data: Record<string, string | number | boolean> | undefined;
 
     /**
      * @constructor
@@ -19,7 +19,7 @@ export default class MenuEvent implements MenuEventDefinition {
      * @param data
      * @see {MenuItem}
      */
-    public constructor(type: MenuItemEventType, source: MenuIdentifier, target?: MenuIdentifier, data?: Record<string, string | number>) {
+    public constructor(type: MenuItemEventType, source: MenuIdentifier, target?: MenuIdentifier, data?: Record<string, string | number | boolean>) {
         this.type = type;
         this.source = {
             itemId: source.itemId,
@@ -57,7 +57,7 @@ export default class MenuEvent implements MenuEventDefinition {
             targetEquals = true;
         }
 
-        return false;
+        //return false;
 
         return selectionTypeEquals && targetEquals && sourceEquals;
     }
