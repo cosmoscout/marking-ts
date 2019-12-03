@@ -24,6 +24,7 @@ export default class Settings implements SettingsDefinition {
                 color: 'rgba(62, 62, 64, 1.0)',
                 width: 2,
             },
+            useActionShape: true,
             text: {
                 color: '#fff',
             },

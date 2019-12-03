@@ -135,6 +135,7 @@ export interface SettingsDefinition {
         color: string;
         selectionColor: string;
         stroke: StrokeSettings;
+        useActionShape: boolean;
         text: {
             color: string;
         };

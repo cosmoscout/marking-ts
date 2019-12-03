@@ -698,6 +698,14 @@ export default class MenuItem extends Group implements MenuIdentifier {
     protected setupGeometry(): void {
         this._geometry = new Path.Circle(CENTER, this.settings[SettingsGroup.GEOMETRY].size);
 
+        if (this.childCount === 0 && this.settings[SettingsGroup.GEOMETRY].useActionShape) {
+            this.geometry.segments[2].handleIn = new Point(0, -this.settings[SettingsGroup.GEOMETRY].size / 4);
+            this.geometry.segments[2].handleOut = new Point(0, this.settings[SettingsGroup.GEOMETRY].size / 4);
+            this.geometry.segments[2].point = this.geometry.segments[2].point.add(new Point(this.settings[SettingsGroup.GEOMETRY].size / 3, 0));
+            this.geometry.pivot = CENTER;
+            this.geometry.rotate(this.positionChild.angle);
+        }
+
         this.setGeometryColorDefault();
         this.geometry.strokeScaling = false;
     }
@@ -871,9 +879,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
     /**
      * Generate an event on the root Event Subject
      *
-     * @param {MenuItemEventType} type The event type
+     * @param {MenuItemEventType} [type] The event type
      * @param {MenuItem} [target] Target menu item
-     * @param data
+     * @param {Record} [data] Event Data
      */
     protected event(type: MenuItemEventType, target?: MenuItem, data?: Record<string, string | number | boolean>): void {
         const event = new MenuEvent(type, this, target, data);
