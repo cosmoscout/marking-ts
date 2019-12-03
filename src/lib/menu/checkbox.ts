@@ -1,5 +1,5 @@
 import MenuItem from "./menu-item";
-import {ItemState, MenuItemEventType, SettingsGroup} from "../enums";
+import {MenuItemEventType, SettingsGroup} from "../enums";
 import ColorFactory from "../../utlis/color-factory";
 import {Path, Rectangle, Size} from "paper";
 import {ZERO_POINT as CENTER} from "../constants";
@@ -21,15 +21,12 @@ export default class Checkbox extends MenuItem {
         }
     }
 
-    /**
-     * Toggle selected flag on selection
-     */
-    protected stateChanged(): void {
-        super.stateChanged();
+    public deselect(): void {
+        this.itemSelected = false;
+    }
 
-        if (this.state === ItemState.SELECTED) {
-            this.itemSelected = !this.itemSelected;
-        }
+    public select(): void {
+        this.itemSelected = true;
     }
 
     /**
@@ -81,6 +78,7 @@ export default class Checkbox extends MenuItem {
      * Add selected flag to selection event
      */
     protected selectedEvent(): void {
+        this.itemSelected = !this.itemSelected;
         this.event(MenuItemEventType.SELECTION, this, {selected: this.itemSelected});
     }
 

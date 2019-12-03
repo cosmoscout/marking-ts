@@ -4,6 +4,7 @@ import {MenuItemDefinition} from "../interfaces";
 import Crankslider from "./crankslider";
 import Ribbonslider from "./ribbonslider";
 import Checkbox from "./checkbox";
+import RadioGroup from "./radio-group";
 
 export default class MenuParser {
     /**
@@ -19,6 +20,7 @@ export default class MenuParser {
      * @return {MenuItem}
      */
     public static parse(structure: MenuItemDefinition, parent: MenuItem | null = null): MenuItem {
+
         let item: MenuItem;
 
         MenuParser.checkIds(structure.id);
@@ -26,6 +28,10 @@ export default class MenuParser {
         if (parent === null) {
             item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon, true);
         } else {
+            if (parent instanceof RadioGroup) {
+                structure.type = 'checkbox';
+            }
+
             if (typeof structure.type === "undefined" || structure.type.length === 0) {
                 item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon);
             } else {
@@ -42,11 +48,15 @@ export default class MenuParser {
                         item = new Checkbox(structure.id, structure.direction, structure.text, structure.icon);
                         break;
 
+                    case 'radio-group':
+                        item = new RadioGroup(structure.id, structure.direction, structure.text, structure.icon);
+                        break;
+
                     default:
                         throw new Error('type is not in [crankslider, ribbonslider]');
                 }
-
             }
+
             parent.addChild(item);
             MenuParser.checkAngles(item);
         }
