@@ -19,7 +19,14 @@ import MenuEvent from "./menu-event";
  * Can contain one or more Child Menus
  */
 export default class MenuItem extends Group implements MenuIdentifier {
+    /**
+     * Icon opacity if item is active and text is displayed
+     */
     protected static readonly ICON_BG_OPACITY: number = 0.4;
+
+    /**
+     * Text scaling if text is bigger than the geometry
+     */
     protected static readonly TEXT_OVERFLOW_SCALE: number = 0.8;
 
     /**
@@ -53,14 +60,15 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Access via getter/setter
      */
     protected _state: ItemState = ItemState.NONE;
-    protected _prevState: ItemState | undefined;
 
     /**
      * True if item has been setup
      */
     protected ready: boolean = false;
 
-
+    /**
+     * Geometries
+     */
     protected readonly geometryGroup: Group;
     protected readonly arcGroup: Group;
     protected readonly lineGroup: Group;
@@ -84,7 +92,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
     protected _inputAngle$: Observable<number> | undefined;
 
-
+    /**
+     * Group containing one or multiple animations
+     * Allows simultaneous execution of multiple animations
+     */
     protected readonly _animations: AnimationGroup;
 
     /**
@@ -113,6 +124,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * The event previous send on the event menu Subject
      */
     protected _prevEvent: MenuEventDefinition | undefined;
+
+    private needsReDraw: boolean = true;
 
     /**
      * Menu Item Constructor
@@ -303,8 +316,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
             return;
         }
 
+        this.needsReDraw = true;
+
         let newChildState: ItemState;
-        this._prevState = this._state;
         this._state = state;
 
         switch (state) {
@@ -314,6 +328,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
             case ItemState.ACTIVE:
                 newChildState = ItemState.CHILD;
+                break;
+
+            case ItemState.SELECTED:
+                this.selectedEvent();
                 break;
 
             case ItemState.CHILD:
@@ -378,21 +396,20 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Recursively redraws the item and all its children
      */
     public redraw(): void {
-        if (this.state === this._prevState) {
-            return;
-        }
-
         if (this._animations !== undefined) {
             this.stopAnimations();
         }
 
-        this.drawItem();
+        // Re draw only if state changed
+        if (this.needsReDraw) {
+            this.drawItem();
+            this.needsReDraw = false;
+        }
 
         this.getChildren().forEach((child: MenuItem): void => {
             child.redraw();
         });
     }
-
 
     /**
      * Called after a state change occurred
@@ -402,7 +419,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this.geometryGroup.position = CENTER;
         this.geometryGroup.visible = true;
-        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
+        this.setGeometryColorDefault();
 
         this.icon.visible = true;
         this.icon.opacity = 1;
@@ -681,7 +698,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
     protected setupGeometry(): void {
         this._geometry = new Path.Circle(CENTER, this.settings[SettingsGroup.GEOMETRY].size);
 
-        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
+        this.setGeometryColorDefault();
         this.geometry.strokeScaling = false;
     }
 
@@ -777,7 +794,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.text.scaling = DEFAULT_SCALE;
         this.text.content = content;
 
-        // @ts-ignore
         if (this.text.bounds.size.width + 10 > this.geometry.bounds.size.width) {
             this.text.fitBounds((this.geometry.bounds as Rectangle).scale(MenuItem.TEXT_OVERFLOW_SCALE));
         }
@@ -839,7 +855,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 this.event(MenuItemEventType.HOVER_SELECTION, this.activeChild);
             } else {
                 this.activeChild.state = ItemState.SELECTED;
-                this.event(MenuItemEventType.SELECTION, this.activeChild);
             }
         } else {
             this.activeChild.state = ItemState.ACTIVE;
@@ -849,6 +864,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.root.redraw();
     }
 
+    protected selectedEvent(): void {
+        this.event(MenuItemEventType.SELECTION, this);
+    }
+
     /**
      * Generate an event on the root Event Subject
      *
@@ -856,7 +875,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * @param {MenuItem} [target] Target menu item
      * @param data
      */
-    protected event(type: MenuItemEventType, target?: MenuItem, data?: Record<string, string | number>): void {
+    protected event(type: MenuItemEventType, target?: MenuItem, data?: Record<string, string | number | boolean>): void {
         const event = new MenuEvent(type, this, target, data);
 
         if (typeof this._prevEvent === "undefined" || !event.equals(this._prevEvent)) {
@@ -874,7 +893,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
     protected reset(): void {
         this.resetActiveHovered();
         this._prevEvent = undefined;
-        this._prevState = undefined;
 
         this.geometryGroup.position = CENTER;
 
@@ -964,10 +982,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
     protected resetChildColor(): void {
         this.getChildren().forEach((child: MenuItem): void => {
-            child.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
+            child.setGeometryColorDefault();
 
             child.getChildren().forEach((childChild: MenuItem): void => {
-                childChild.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
+                childChild.setGeometryColorDefault();
             });
         });
     };
@@ -1054,9 +1072,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.resetChildColor();
 
         this.hoveredChild = nearestChild;
-        this.hoveredChild.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
+        this.hoveredChild.setGeometryColorHovered();
         this.hoveredChild.getChildren().forEach((child: MenuItem): void => {
-            child.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
+            child.setGeometryColorHovered();
         });
 
         if (this.hoveredChild.isLeaf) {
@@ -1140,7 +1158,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
             if (drag.state === DragState.END) {
                 this.menu.trace$.reset();
                 this.state = ItemState.SELECTED;
-                this.event(MenuItemEventType.SELECTION, this);
                 this.root.redraw();
             }
             return;
@@ -1167,7 +1184,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 child.position = child.positionChild;
             });
     }
-
 
     /**
      * Draws the item based on state
@@ -1219,6 +1235,51 @@ export default class MenuItem extends Group implements MenuIdentifier {
     }
 
     /**
+     * Called before init end
+     * @see init
+     */
+    protected itemReady(): void {
+    }
+
+    /**
+     * Called after setup methods
+     */
+    protected afterSetup(): void {
+    }
+
+    /**
+     * Set geometry fill color to default.
+     * Default fill color.
+     */
+    protected setGeometryColorDefault(): void {
+        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
+    }
+
+    /**
+     * Set geometry fill color to selected.
+     * This is the color upon a final selection.
+     */
+    protected setGeometryColorSelected(): void {
+        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
+    }
+
+    /**
+     * Set geometry fill color to active selected
+     * This is the color if the item is actively selected. (User can still navigate back).
+     */
+    protected setGeometryColorActiveSelected(): void {
+        this.setGeometryColorSelected();
+    }
+
+    /**
+     * Set geometry fill color to hovered.
+     * This is the color if the input device hovers over the item.
+     */
+    protected setGeometryColorHovered(): void {
+        this.setGeometryColorSelected();
+    }
+
+    /**
      * @return {string}
      */
     public toString(): string {
@@ -1230,17 +1291,18 @@ export default class MenuItem extends Group implements MenuIdentifier {
         return `${this.itemId} (${Angle.toDeg(this.angle)}°) | Parent: ${parentId} | Root: ${this.isRoot} | Pos: ${this.position} | State: ${this.state} | Children: ${this.getChildren().length}`;
     }
 
+
+    /*
+    *******************************************
+    Animations
+    *******************************************
+     */
     /**
      * Animation to hidden
      */
     protected animateStateHidden(): void {
-        if ((this.parent as MenuItem).state === ItemState.HIDDEN || (this.parent as MenuItem).state === ItemState.DOT) {
-            return;
-        }
-
         const to = {
             scaling: 0,
-            // @ts-ignore
             position: CENTER.subtract(this.position as Point).add((this.position as Point).multiply(this.settings[SettingsGroup.SCALES].dot))
         };
 
@@ -1259,9 +1321,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this._animations.push(
             new Animation({
                 target: this.geometryGroup,
-                from: {
-                    scaling: this.settings[SettingsGroup.SCALES].parent
-                },
                 to: {
                     scaling: 1
                 },
@@ -1316,10 +1375,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Animation from Active to Parent
      */
     protected animateStateParent(): void {
-        if ((this.parent as MenuItem).state !== ItemState.PARENT) {
-            //return;
-        }
-
         this._animations.push(
             new Animation({
                 target: this.geometryGroup,
@@ -1328,18 +1383,12 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 }
             }),
         );
-
-
     }
 
     /**
      * Animation to Dot
      */
     protected animateStateDot(): void {
-        if ((this.parent as MenuItem).state !== ItemState.CHILD) {
-            //return;
-        }
-
         if ((this.parent as MenuItem).state === ItemState.PARENT) {
             //this.geometryGroup.visible = false;
             this._animations.push(
@@ -1356,7 +1405,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
                     target: this.geometryGroup,
                     to: {
                         scaling: this.settings[SettingsGroup.SCALES].dot,
-                        //scaling: Number.EPSILON,
                     }
                 })
             );
@@ -1368,7 +1416,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: this,
                 from: {
-                    // @ts-ignore
                     position: this.parent.position as Point,
                 },
                 to: {
@@ -1378,7 +1425,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: this.geometryGroup,
                 from: {
-                    // @ts-ignore
                     position: CENTER.subtract((this.parent as Item).position as Point),
                     scaling: 0,
                 },
@@ -1461,7 +1507,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
             new Animation({
                 target: this,
                 to: {
-                    // @ts-ignore
                     position: this.position.normalize(this.settings[SettingsGroup.RADII].dot),
                 }
             }),
@@ -1551,17 +1596,17 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Animation to Selected
      */
     protected animateStateSelected(): void {
-        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
+        this.setGeometryColorSelected();
         this.icon.opacity = MenuItem.ICON_BG_OPACITY;
 
         this._animations.push(
             new Animation({
                 target: this.geometryGroup,
                 from: {
-                    scaling: this.settings[SettingsGroup.SCALES].child
+                    scaling: 0.9
                 },
                 to: {
-                    scaling: 1
+                    scaling: 1.15
                 },
             })
         );
@@ -1572,19 +1617,15 @@ export default class MenuItem extends Group implements MenuIdentifier {
         });
     }
 
-
     /**
      * Animation to Active Selection
      */
     protected animateStateActiveSelection(): void {
-        this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
+        this.setGeometryColorActiveSelected();
 
         this._animations.push(
             new Animation({
                 target: this.geometryGroup,
-                from: {
-                    scaling: this.settings[SettingsGroup.SCALES].child
-                },
                 to: {
                     scaling: 1
                 },
@@ -1638,23 +1679,5 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 }
             }
         });
-    }
-
-
-
-    // Stuff Added while creating ribbonslider
-    /**
-     * Called before init end
-     * @see {init}
-     */
-    protected itemReady(): void {
-
-    }
-
-    /**
-     * Called after setup methods
-     */
-    protected afterSetup(): void {
-
     }
 }
