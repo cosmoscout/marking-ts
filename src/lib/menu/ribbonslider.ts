@@ -10,7 +10,7 @@ import {
     PointText,
     SymbolDefinition
 } from 'paper';
-import {ZERO_POINT} from "../constants";
+import {ZERO_POINT as CENTER, ZERO_POINT} from "../constants";
 import {ClickState, DragState, ItemState, MenuItemEventType, SettingsGroup} from "../enums";
 import {DragDefinition, SliderDefinition} from "../interfaces";
 import ColorFactory from "../../utlis/color-factory";
@@ -24,6 +24,7 @@ export default class Ribbonslider extends MenuItem {
      * The length in px of the dark gradient
      */
     private static GRADIENT_LENGTH: number = 150;
+
     /**
      * Ribbon height in px
      */
@@ -76,6 +77,8 @@ export default class Ribbonslider extends MenuItem {
      */
     private hasLock: boolean = false;
 
+
+    private _childIndicator: Path | undefined;
 
     public constructor(id: string, angle: number, text: string, icon?: string) {
         super(id, angle, text, icon);
@@ -270,6 +273,12 @@ export default class Ribbonslider extends MenuItem {
         });
     }
 
+    protected setupGeometry(): void {
+        this._geometry = new Path.Circle(CENTER, this.settings[SettingsGroup.GEOMETRY].size);
+
+        this.setGeometryColorDefault();
+        this.geometry.strokeScaling = false;
+    }
 
     /**
      * Setup more things
@@ -374,6 +383,16 @@ export default class Ribbonslider extends MenuItem {
         });
         this.geometryGroup.addChild(this.ribbonMaskGroup);
         this.geometryGroup.addChild(this.gradient);
+
+
+        this._childIndicator = new Path.Rectangle(ZERO_POINT, new Point(Ribbonslider.GRADIENT_LENGTH*0.8, Ribbonslider.RIBBON_HEIGHT*0.8));
+
+        //this._childIndicator.pivot = this.ribbonGroup.bounds.leftCenter.add(new Point(Ribbonslider.GRADIENT_LENGTH / 2, 0));
+        this._childIndicator.position = ZERO_POINT;
+
+        this.geometryGroup.addChild(this._childIndicator);
+
+
         this.text.bringToFront();
 
         this.text.fontSize = '20px';
@@ -392,10 +411,16 @@ export default class Ribbonslider extends MenuItem {
             this.updateText('' + this.value);
             this.moveRibbonToValuePosition(this.value);
             this.ribbonMaskGroup.visible = true;
+            this._childIndicator.visible = false;
             this.gradient.visible = true;
         } else {
             this.ribbonMaskGroup.visible = false;
+            this._childIndicator.visible = true;
             this.gradient.visible = false;
+        }
+
+        if (this.state === ItemState.DOT) {
+            this._childIndicator.visible = false;
         }
     }
 
