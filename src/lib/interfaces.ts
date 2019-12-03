@@ -73,7 +73,7 @@ export interface MenuEventDefinition {
     type: MenuItemEventType;
     source: MenuIdentifier;
     target?: MenuIdentifier;
-    data?: Record<string, string | number>;
+    data?: Record<string, string | number | boolean>;
 }
 
 
@@ -141,6 +141,10 @@ export interface SettingsDefinition {
         icon: {
             color: string;
         };
+    };
+    readonly [SettingsGroup.CHECKBOX]: {
+        selectionColor: string;
+        cornerRadius: number;
     };
     readonly [SettingsGroup.CONNECTOR]: {
         enabled: boolean;

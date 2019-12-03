@@ -3,6 +3,7 @@ import Angle from "../../utlis/angle";
 import {MenuItemDefinition} from "../interfaces";
 import Crankslider from "./crankslider";
 import Ribbonslider from "./ribbonslider";
+import Checkbox from "./checkbox";
 
 export default class MenuParser {
     /**
@@ -23,18 +24,22 @@ export default class MenuParser {
         MenuParser.checkIds(structure.id);
 
         if (parent === null) {
-            item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon ? structure.icon : undefined, true);
+            item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon, true);
         } else {
             if (typeof structure.type === "undefined" || structure.type.length === 0) {
-                item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon ? structure.icon : undefined);
+                item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon);
             } else {
                 switch (structure.type) {
                     case 'crankslider':
-                        item = new Crankslider(structure.id, structure.direction, structure.text, structure.icon ? structure.icon : undefined);
+                        item = new Crankslider(structure.id, structure.direction, structure.text, structure.icon);
                         break;
 
                     case 'ribbonslider':
-                        item = new Ribbonslider(structure.id, structure.direction, structure.text, structure.icon ? structure.icon : undefined);
+                        item = new Ribbonslider(structure.id, structure.direction, structure.text, structure.icon);
+                        break;
+
+                    case 'checkbox':
+                        item = new Checkbox(structure.id, structure.direction, structure.text, structure.icon);
                         break;
 
                     default:

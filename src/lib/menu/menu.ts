@@ -271,8 +271,9 @@ export default class Menu implements MenuData {
         if (typeof window.PointerEvent === "undefined") {
             this.setupObservableDataFromInputEvents();
         } else {
+            this.setupObservableDataFromInputEvents();
             // This is definitely a TODO
-            this.setupObservableDataFromPointerEvents();
+            //this.setupObservableDataFromPointerEvents();
         }
 
         this._traceVisGroup = new Group();

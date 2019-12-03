@@ -31,6 +31,10 @@ export default class Settings implements SettingsDefinition {
                 color: '#fff',
             }
         },
+        [SettingsGroup.CHECKBOX]: {
+            selectionColor: '#529b1e',
+            cornerRadius: 25,
+        },
         [SettingsGroup.CONNECTOR]: {
             enabled: true,
             color: '#393a3c',
@@ -100,6 +104,10 @@ export default class Settings implements SettingsDefinition {
 
     public get [SettingsGroup.RADII](): SettingsDefinition[SettingsGroup.RADII] {
         return this._settings[SettingsGroup.RADII];
+    }
+
+    public get [SettingsGroup.CHECKBOX](): SettingsDefinition[SettingsGroup.CHECKBOX] {
+        return this._settings[SettingsGroup.CHECKBOX];
     }
 
     public get projectStyle(): Record<string, string | number> {

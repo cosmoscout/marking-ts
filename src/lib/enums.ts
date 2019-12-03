@@ -7,7 +7,6 @@ export enum Groups {
     CONNECTOR = 'connector',
 }
 
-
 /**
  * MenuItem States
  */
@@ -29,7 +28,6 @@ export enum ItemState {
     ACTIVE_SELECTION = 'activeSelected'
 }
 
-
 /**
  * MenuItem event types
  */
@@ -43,7 +41,6 @@ export enum MenuItemEventType {
 
     SLIDER_VALUE_CHANGED = 'sliderValueChanged'
 }
-
 
 /**
  * Input button states
@@ -61,7 +58,6 @@ export enum DragState {
     END = 'dragEnd'
 }
 
-
 /**
  * Settings groups
  */
@@ -71,5 +67,6 @@ export enum SettingsGroup {
     CONNECTOR = 'connector',
     ARC = 'arc',
     SCALES = 'scales',
-    RADII = 'radii'
+    RADII = 'radii',
+    CHECKBOX = 'checkbox',
 }
