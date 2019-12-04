@@ -12,12 +12,13 @@ import {
 } from 'paper';
 import {ZERO_POINT as CENTER, ZERO_POINT} from "../constants";
 import {ClickState, DragState, ItemState, MenuItemEventType, SettingsGroup} from "../enums";
-import {DragDefinition, SliderDefinition} from "../interfaces";
+import {ArcDefinition, DragDefinition, SliderDefinition} from "../interfaces";
 import ColorFactory from "../../utlis/color-factory";
 import throttle from 'lodash/throttle'
 import Animation from "../../utlis/animation";
 import Angle from "../../utlis/angle";
 import {precision, roundNumber} from "../../utlis/numbers";
+import Arc from "../../utlis/arc";
 
 export default class Ribbonslider extends MenuItem {
     /**
@@ -55,7 +56,7 @@ export default class Ribbonslider extends MenuItem {
     private _gradient: Path.Rectangle | undefined;
 
     /**
-     * 3x4 Grab dots
+     * 2x3 Grab dots
      * Use as grabDot.place(Position)
      */
     private _grabDot: SymbolDefinition | undefined;
@@ -65,6 +66,9 @@ export default class Ribbonslider extends MenuItem {
      */
     private _ribbonMaskGroup: Group | undefined;
 
+    /**
+     * The slide configuration
+     */
     private _configuration: SliderDefinition | undefined;
 
     /**
@@ -73,12 +77,24 @@ export default class Ribbonslider extends MenuItem {
     private _value = 0;
 
     /**
-     * True if PointerLock is engaged
+     * Previous input position while dragging
      */
-    private hasLock: boolean = false;
+    private prevDragPosition: Point | undefined;
 
+    /**
+     * Flag if currently dragging
+     */
+    private dragging: boolean = false;
 
-    private _childIndicator: Path | undefined;
+    /**
+     * Bar indicating item is a slider while in child state
+     */
+    private childIndicator: Path | undefined;
+
+    /**
+     * Flag is input is over "done" arc
+     */
+    private done: boolean = false;
 
     public constructor(id: string, angle: number, text: string, icon?: string) {
         super(id, angle, text, icon);
@@ -221,7 +237,7 @@ export default class Ribbonslider extends MenuItem {
     /**
      * Accessor
      *
-     * @{see} _ribbonGroup
+     * @see {_ribbonGroup}
      */
     private get ribbonMaskGroup(): Group {
         if (typeof this._ribbonMaskGroup === "undefined") {
@@ -239,7 +255,6 @@ export default class Ribbonslider extends MenuItem {
     private get value(): number {
         return this._value;
     }
-
 
     /**
      * Moves the Ribbon to a given position of a slider value
@@ -281,6 +296,16 @@ export default class Ribbonslider extends MenuItem {
     }
 
     /**
+     * Creates the little box visible in child state, denoting the items slider class.
+     * Created pre setup to utilize setGeometryColorDefault & setGeometryColorSelected
+     */
+    protected preSetup(): void {
+        this.childIndicator = new Path.Rectangle(ZERO_POINT, new Point(Ribbonslider.GRADIENT_LENGTH * 0.8, Ribbonslider.RIBBON_HEIGHT * 0.8));
+        this.childIndicator.position = ZERO_POINT;
+        this.childIndicator.strokeScaling = false;
+    }
+
+    /**
      * Setup more things
      */
     protected afterSetup(): void {
@@ -307,39 +332,100 @@ export default class Ribbonslider extends MenuItem {
     /**
      * Enable pointer lock upon dragging
      * @param drag
-     * @see {pointerLockListener}
      */
     protected dragLogic(drag: DragDefinition): void {
-        if (!this.hasLock) {
-            // @ts-ignore
-            this.menu.canvas.requestPointerLock();
-            this.ribbon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
-            document.addEventListener('mousemove', this.pointerLockListener);
-            this.hasLock = true;
+        this.dragging = true;
+
+        if (this.prevDragPosition === undefined) {
+            this.updateText('' + this.value);
+            this.prevDragPosition = drag.position;
         }
 
-        if (drag.state === DragState.END && this.hasLock) {
-            // @ts-ignore
-            document.exitPointerLock();
-            this.ribbon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
-            document.removeEventListener('mousemove', this.pointerLockListener);
+        const value = this.configuration.min - (this.ribbonGroup.position.x / this.configuration.stepDist) * this.configuration.stepSize;
+        const numberPrecision = precision(this.configuration.stepSize);
+
+        if (numberPrecision === 0) {
+            this.value = Math.round(value);
+        } else {
+            this.value = roundNumber(value, numberPrecision);
+        }
+
+        if (this.inSnappingRange()) {
+            this.updateRibbonPosition(this.prevDragPosition.y - drag.position.y);
+        } else {
+            this.updateRibbonPosition(drag.position.x - this.prevDragPosition.x);
+        }
+
+        this.prevDragPosition = drag.position;
+
+        if (drag.state === DragState.END) {
             this.moveRibbonToValuePosition(this.value, true);
-            this.hasLock = false;
+            this.prevDragPosition = undefined;
+            this.dragging = false;
         }
 
         return;
     }
 
     /**
-     * TODO
-     * Only listens to right clicks atm
-     * @param clickState
+     * @inheritDoc
      */
     protected clickLogic(clickState: ClickState): void {
         this.hoveredChild = undefined;
-        if (clickState === ClickState.RIGHT_CLICK) {
-            super.clickLogic(clickState);
+
+        if (this.getPositionToTest() > this.settings[SettingsGroup.GEOMETRY].sizeDeadZone) {
+            if (this.done) {
+                this.root.state = ItemState.HIDDEN;
+                this.root.redraw();
+            } else {
+                super.clickLogic(clickState);
+            }
         }
+    }
+
+    protected selectionLogic(angle: number): void {
+        if (this.dragging) {
+            return;
+        }
+
+        if (this.getPositionToTest() > this.settings[SettingsGroup.GEOMETRY].sizeDeadZone) {
+            super.selectionLogic(angle);
+        } else {
+            this.updateText('' + this.value);
+            (this.arcGroup.children as Item[])
+                .forEach((a: Item): void => {
+                    if (typeof a.data.fx !== "undefined" && a.data.fx.running) {
+                        a.data.fx.stop();
+                    }
+                    a.opacity = 0;
+                });
+        }
+    }
+
+    /**
+     * Position to test the dead zone against.
+     * Horizontal State = Y-Position
+     * Vertical State = X-Position
+     */
+    private getPositionToTest(): number {
+        let pos: number;
+
+        if (this.inSnappingRange()) {
+            pos = Math.abs(this.globalToLocal(this.menu.inputPosition).x);
+        } else {
+            pos = Math.abs(this.globalToLocal(this.menu.inputPosition).y);
+        }
+
+        return pos;
+    }
+
+    protected selectionLogicHoverOperations() {
+        if (this.dragging) {
+            return;
+        }
+
+        this.updateText('Done');
+        this.done = true;
     }
 
     /**
@@ -348,7 +434,6 @@ export default class Ribbonslider extends MenuItem {
     protected setGroupsVisibility(): void {
         super.setGroupsVisibility();
         this.lineGroup.visible = false;
-        this.arcGroup.visible = false;
 
         this.text.visible = true;
         this.icon.opacity = 0;
@@ -370,28 +455,33 @@ export default class Ribbonslider extends MenuItem {
      * @inheritDoc
      */
     protected selectionLogicBackOperations() {
-        return;
+        if (this.dragging) {
+            return;
+        }
+
+        super.selectionLogicBackOperations();
+        this.done = false;
     }
 
     /**
      * @inheritDoc
      */
     protected itemReady(): void {
+        super.itemReady();
+
         this._ribbonMaskGroup = new Group({
             children: [this.createMask(), this.ribbonGroup],
             blendMode: 'source-over'
         });
+        this.ribbonMaskGroup.addChild(this.gradient);
         this.geometryGroup.addChild(this.ribbonMaskGroup);
-        this.geometryGroup.addChild(this.gradient);
 
+        this.geometryGroup.addChild(this.childIndicator);
 
-        this._childIndicator = new Path.Rectangle(ZERO_POINT, new Point(Ribbonslider.GRADIENT_LENGTH*0.8, Ribbonslider.RIBBON_HEIGHT*0.8));
-
-        //this._childIndicator.pivot = this.ribbonGroup.bounds.leftCenter.add(new Point(Ribbonslider.GRADIENT_LENGTH / 2, 0));
-        this._childIndicator.position = ZERO_POINT;
-
-        this.geometryGroup.addChild(this._childIndicator);
-
+        if (this.inSnappingRange()) {
+            this.ribbonMaskGroup.pivot = CENTER;
+            this.ribbonMaskGroup.rotate(-90);
+        }
 
         this.text.bringToFront();
 
@@ -399,7 +489,47 @@ export default class Ribbonslider extends MenuItem {
 
         this.value = this.configuration.initial;
         this.moveRibbonToValuePosition(this.value);
-        this.ribbonMaskGroup.addChild(this.createIndicatorCaret());
+
+        this.collectArcAngles();
+        this.createArcs();
+    }
+
+    /**
+     * Collect child angles for arc creation
+     * @TODO somewhat messy
+     */
+    protected collectArcAngles(): void {
+        let angles: Array<number> = new Array<number>();
+
+        let newAngle: number;
+
+        const angle = Angle.toDeg(this.angle);
+
+        if (angle > 45 && angle < 135) {
+            newAngle = 90;
+        }
+
+        if (angle > 235 && angle < 315) {
+            newAngle = 270;
+        }
+
+        if (Angle.between(angle, 315, 45)) {
+            newAngle = 0;
+        } else if (Angle.between(angle, 135, 235)) {
+            newAngle = 180;
+        }
+
+        const parentWedgeAngle = Angle.opposite(Angle.toRad(newAngle));
+
+        angles.push(parentWedgeAngle);
+
+        if (angles.length === 1) {
+            angles.push(Angle.toRad(newAngle));
+        }
+
+        this.arcs = Arc.fromAngles(angles);
+
+        this.parentArc = this.arcs.find((arc: ArcDefinition): boolean => arc.origAngle === parentWedgeAngle);
     }
 
     /**
@@ -411,16 +541,19 @@ export default class Ribbonslider extends MenuItem {
             this.updateText('' + this.value);
             this.moveRibbonToValuePosition(this.value);
             this.ribbonMaskGroup.visible = true;
-            this._childIndicator.visible = false;
+            this.childIndicator.visible = false;
             this.gradient.visible = true;
+
         } else {
             this.ribbonMaskGroup.visible = false;
-            this._childIndicator.visible = true;
+            this.childIndicator.visible = true;
             this.gradient.visible = false;
+            this.updateText('' + this.value);
+
         }
 
         if (this.state === ItemState.DOT) {
-            this._childIndicator.visible = false;
+            this.childIndicator.visible = false;
         }
     }
 
@@ -431,10 +564,34 @@ export default class Ribbonslider extends MenuItem {
         return;
     }
 
+    protected setGeometryColorDefault(): void {
+        super.setGeometryColorDefault();
+        this.childIndicator.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
+    }
+
+    protected setGeometryColorSelected(): void {
+        super.setGeometryColorSelected();
+        this.childIndicator.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
+    }
+
+    /**
+     * Can't have children
+     */
     protected getChildren(): Array<MenuItem> {
         return [];
     }
 
+    /**
+     * Slider is horizontal per default.
+     * If item angle is between >45° && <135° || >235° && <315°, rotate the slider to a vertical position.
+     *
+     * @return boolean
+     */
+    private inSnappingRange(): boolean {
+        const angle = Angle.toDeg(this.angle);
+
+        return (angle > 45 && angle < 135) || (angle > 235 && angle < 315);
+    }
 
     /**
      * Creates the main ribbon and sets up the content
@@ -447,7 +604,7 @@ export default class Ribbonslider extends MenuItem {
 
         this.ribbonGroup.addChild(this.ribbon);
         this.ribbonGroup.pivot = this.ribbonGroup.bounds.leftCenter.add(new Point(Ribbonslider.GRADIENT_LENGTH / 2, 0));
-        this.ribbonGroup.position = ZERO_POINT;
+        this.ribbonGroup.position = CENTER;
 
         this.ribbon.onMouseEnter = () => {
             this.menu.canvas.style.cursor = "ew-resize";
@@ -464,12 +621,6 @@ export default class Ribbonslider extends MenuItem {
      * Adds the grab dots and value texts to the ribbon
      */
     private setupRibbonContent(): void {
-        const onMouseEnterPointer = (e: PaperMouseEvent) => {
-            if (!this.hasLock) {
-                e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
-                this.menu.canvas.style.cursor = "pointer";
-            }
-        };
         const onMouseLeave = () => {
             this.menu.canvas.style.cursor = "default";
         };
@@ -481,14 +632,18 @@ export default class Ribbonslider extends MenuItem {
             this.value = e.target.data.value;
         };
 
+
         for (let i = 0; i <= this.getRibbonLength() / (this.configuration.stepDist / 2); i++) {
             if (i % 2 === 0) {
                 let valueText = (this.text.clone() as PointText);
+                if (this.inSnappingRange()) {
+                    valueText.rotate(90);
+                }
                 let stepValue = Math.round((this.configuration.min + i * this.configuration.stepSize / 2) * 100) / 100;
                 valueText.position = new Point(i * (this.configuration.stepDist / 2) + Ribbonslider.GRADIENT_LENGTH / 2, Ribbonslider.RIBBON_HEIGHT / 2);
                 valueText.content = '' + stepValue;
                 valueText.data.value = stepValue;
-                valueText.onMouseEnter = onMouseEnterPointer;
+                /*                valueText.onMouseEnter = onMouseEnterPointer;*/
                 valueText.onMouseLeave = (e: PaperMouseEvent) => {
                     onMouseLeave();
                     e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].text.color);
@@ -499,7 +654,6 @@ export default class Ribbonslider extends MenuItem {
                 let dots = this.grabDot.place(new Point(i * (this.configuration.stepDist / 2) + Ribbonslider.GRADIENT_LENGTH / 2, Ribbonslider.RIBBON_HEIGHT / 2));
                 dots.onMouseEnter = onMouseEnterResize;
 
-                // @ts-ignore
                 this.ribbonGroup.addChild(dots);
             }
         }
@@ -511,7 +665,7 @@ export default class Ribbonslider extends MenuItem {
      */
     private setupGradient(): void {
         this._gradient = new Path.Rectangle(ZERO_POINT, new Point(Ribbonslider.GRADIENT_LENGTH, Ribbonslider.RIBBON_HEIGHT));
-        this.gradient.bounds.center = ZERO_POINT;
+        this.gradient.bounds.center = CENTER;
         this.gradient.strokeWidth = 0;
 
         let gradient = ColorFactory.fromArray([
@@ -561,7 +715,7 @@ export default class Ribbonslider extends MenuItem {
      */
     private createMask(): Path.Rectangle {
         let mask = new Path.Rectangle(ZERO_POINT, new Point(this.menu.canvas.width * Ribbonslider.MASK_LENGTH_MULTIPLIER, Ribbonslider.RIBBON_HEIGHT + 2));
-        mask.bounds.center = ZERO_POINT;
+        mask.bounds.center = CENTER;
         mask.strokeWidth = 0;
 
         let gradient = ColorFactory.fromArray([
@@ -578,21 +732,6 @@ export default class Ribbonslider extends MenuItem {
 
 
     /**
-     * Creates a triangle
-     */
-    private createIndicatorCaret(): Path.RegularPolygon {
-        const caret = new Path.RegularPolygon(ZERO_POINT, 3, 10);
-        caret.pivot = caret.bounds.bottomCenter;
-        caret.rotate(Angle.toDeg(Math.PI));
-        caret.segments[1].point = caret.segments[1].point.add(new Point(0, 3));
-        caret.strokeWidth = 0;
-        caret.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].stroke.color);
-        caret.position = (this.geometry.bounds.topCenter.add(new Point(0, 1)));
-
-        return caret;
-    }
-
-    /**
      * Calculate the ribbon length
      */
     private getRibbonLength(): number {
@@ -604,21 +743,21 @@ export default class Ribbonslider extends MenuItem {
      * Updates the ribbon position
      * Positive values = Move to right
      *
-     * @param deltaX The amount to move
+     * @param delta The amount to move
      * @param animated True if movement should be animated
      */
-    private updateRibbonPosition(deltaX: number, animated: boolean = false): void {
+    private updateRibbonPosition(delta: number, animated: boolean = false): void {
         let positionX: number = 0;
 
-        if (deltaX > 0) {
-            if (this.ribbonGroup.bounds.leftCenter.x + (Ribbonslider.GRADIENT_LENGTH / 2) + deltaX <= 0) {
-                positionX = this.ribbonGroup.position.x + deltaX;
+        if (delta >= 0) {
+            if (this.ribbonGroup.bounds.leftCenter.x + (Ribbonslider.GRADIENT_LENGTH / 2) + delta <= 0) {
+                positionX = this.ribbonGroup.position.x + delta;
             } else {
                 positionX = 0;
             }
-        } else if (deltaX < 0) {
-            if (this.ribbonGroup.bounds.rightCenter.x - (Ribbonslider.GRADIENT_LENGTH / 2) + deltaX >= 0) {
-                positionX = this.ribbonGroup.position.x + deltaX;
+        } else if (delta < 0) {
+            if (this.ribbonGroup.bounds.rightCenter.x - (Ribbonslider.GRADIENT_LENGTH / 2) + delta >= 0) {
+                positionX = this.ribbonGroup.position.x + delta;
             } else {
                 positionX = -this.getRibbonLength();
             }
@@ -643,28 +782,6 @@ export default class Ribbonslider extends MenuItem {
             'value': this.value,
         });
     }
-
-    /**
-     * Pointer Lock Listener
-     * Updates the Ribbon Position and updates the text
-     * @param event
-     * @see {updateRibbonPosition}
-     * @see {value}
-     */
-    private pointerLockListener = (event: MouseEvent) => {
-        if (event.movementX != 0) {
-            const value = this.configuration.min - (this.ribbonGroup.position.x / this.configuration.stepDist) * this.configuration.stepSize;
-            const numberPrecision = precision(this.configuration.stepSize);
-
-            if (numberPrecision === 0) {
-                this.value = Math.round(value);
-            } else {
-                this.value = roundNumber(value, numberPrecision);
-            }
-
-            this.updateRibbonPosition(event.movementX);
-        }
-    };
 
     /**
      * Throttles text updates to once per frame
