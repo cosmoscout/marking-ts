@@ -10,12 +10,6 @@ import {ZERO_POINT} from "../constants";
 import {DragDefinition, Input, MenuData, MenuEventDefinition, SettingsDefinition} from "../interfaces";
 import ColorFactory from "../../utlis/color-factory";
 
-declare global {
-    interface Window {
-        PointerEvent: typeof PointerEvent;
-    }
-}
-
 /**
  * Main menu holding all items and input observables
  */
@@ -28,7 +22,6 @@ export default class Menu implements MenuData {
      * @readonly
      */
     private static readonly INPUT_TIMEOUT: number = 200;
-
 
     // Observables
     /**
@@ -145,7 +138,7 @@ export default class Menu implements MenuData {
     /**
      * Flag if Menu is in marking mode
      *
-     * @type {boolean} [false]
+     * @type {boolean} false
      */
     private _markingMode: boolean = false;
 
@@ -153,7 +146,7 @@ export default class Menu implements MenuData {
      *
      * @param {string} rootSelector
      * @see {_rootSelector}
-     * @param {SettingsDefinition | Record<string, any>} [settings={}] Object gets merged with default _settings
+     * @param {SettingsDefinition | Record<string, any>} settings={} Object gets merged with default _settings
      * @constructor
      */
     public constructor(rootSelector: string, settings: Record<string, any> | SettingsDefinition = {}) {

@@ -16,7 +16,7 @@ export default class MenuParser {
      * Parses a JSON Structure to Menu Items
      *
      * @param {MenuItemDefinition} structure
-     * @param {MenuItem | null} [parent]
+     * @param {MenuItem | null} parent
      * @return {MenuItem}
      */
     public static parse(structure: MenuItemDefinition, parent: MenuItem | null = null): MenuItem {
@@ -53,7 +53,7 @@ export default class MenuParser {
                         break;
 
                     default:
-                        throw new Error('type is not in [crankslider, ribbonslider]');
+                        throw new Error('type is not in crankslider, ribbonslider');
                 }
             }
 

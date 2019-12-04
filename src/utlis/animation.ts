@@ -1,4 +1,3 @@
-// @ts-ignore
 import {Item, Point, Tween} from 'paper';
 import {DEFAULT_SCALE} from "../lib/constants";
 import {combineLatest, forkJoin, from, fromEvent, Observable, Subject} from "rxjs";
@@ -93,7 +92,6 @@ export default class Animation implements IAnimation {
     private _to: AnimatableData | undefined;
 
     // Tween instance
-    // @ts-ignore
     private _tween: Tween;
 
     // Ready flag

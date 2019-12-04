@@ -16,7 +16,7 @@ export default class MenuEvent implements MenuEventDefinition {
      * @constructor
      * @param {MenuItemEventType} type The event type
      * @param {MenuIdentifier} source The source MenuItem
-     * @param {MenuIdentifier} [target] The target MenuItem
+     * @param {MenuIdentifier} target The target MenuItem
      * @param data
      * @see {MenuItem}
      */
@@ -40,7 +40,7 @@ export default class MenuEvent implements MenuEventDefinition {
     /**
      * Compares two events
      *
-     * @param {MenuEventDefinition} [event]
+     * @param {MenuEventDefinition} event
      * @return {boolean}
      */
     public equals(event?: MenuEventDefinition): boolean {

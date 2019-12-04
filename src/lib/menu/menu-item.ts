@@ -40,7 +40,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
     public readonly textContent: string;
 
     /**
-     * The menus angle on the parent
+     * The items angle on the parent in child/dot state
      */
     public readonly angle: number;
 
@@ -62,6 +62,15 @@ export default class MenuItem extends Group implements MenuIdentifier {
     protected _state: ItemState = ItemState.NONE;
 
     /**
+     * Removes unnecessary draw calls.
+     * A re-draw should only occur is the state has changed.
+     *
+     * @see {redraw}
+     * @see {drawItem}
+     */
+    protected needsReDraw: boolean = true;
+
+    /**
      * True if item has been setup
      */
     protected ready: boolean = false;
@@ -79,12 +88,17 @@ export default class MenuItem extends Group implements MenuIdentifier {
     protected _connector: Path.Line | undefined;
     protected _icon: CompoundPath | undefined;
 
-
-    protected back: boolean = false;
+    /**
+     * True if input device is in back navigation arc
+     */
+    protected isInBackNavigationArc: boolean = false;
     protected activeChild: MenuItem | undefined;
     protected hoveredChild: MenuItem | undefined;
     protected parentArc: ArcDefinition | undefined;
 
+    /**
+     * @see {addSubscriptions}
+     */
     protected subscription: Subscription | undefined;
 
     protected readonly _selectionSubject$: Subject<MenuEventDefinition>;
@@ -125,8 +139,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
      */
     protected _prevEvent: MenuEventDefinition | undefined;
 
-    private needsReDraw: boolean = true;
-
     /**
      * Menu Item Constructor
      *
@@ -134,8 +146,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * @param {string} id Menu Entry Identifier
      * @param {number} angle Angle on which the menu item is displayed
      * @param {string} text Label text
-     * @param {string} [icon] Label iconName
-     * @param {boolean} [isRoot=false] True for the upper most item
+     * @param {string|undefined} icon Label iconName
+     * @param {boolean} isRoot=false True for the upper most item
      */
     public constructor(id: string, angle: number, text: string, icon?: string, isRoot: boolean = false) {
         super();
@@ -203,6 +215,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this._animations.duration = this.settings[SettingsGroup.MAIN].animationDuration;
 
+        this.preSetup();
         this.setupGroups();
         this.setupConnector();
         this.setupGeometry();
@@ -228,7 +241,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.collectArcAngles();
         this.createArcs();
 
-        this.ready = true;
         this.itemReady();
     }
 
@@ -318,7 +330,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this.needsReDraw = true;
 
-        let newChildState: ItemState;
+        let newChildState: ItemState = ItemState.NONE;
         this._state = state;
 
         switch (state) {
@@ -352,10 +364,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
             case ItemState.SUBMENU:
                 newChildState = ItemState.DOT;
-                break;
-
-            default:
-                newChildState = ItemState.NONE;
                 break;
         }
 
@@ -415,7 +423,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Called after a state change occurred
      */
     protected stateChanged(): void {
-        this.back = false;
+        this.isInBackNavigationArc = false;
 
         this.geometryGroup.position = CENTER;
         this.geometryGroup.visible = true;
@@ -805,6 +813,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
         if (this.text.bounds.size.width + 10 > this.geometry.bounds.size.width) {
             this.text.fitBounds((this.geometry.bounds as Rectangle).scale(MenuItem.TEXT_OVERFLOW_SCALE));
         }
+
+        this.text.position = CENTER;
     }
 
     /**
@@ -879,9 +889,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
     /**
      * Generate an event on the root Event Subject
      *
-     * @param {MenuItemEventType} [type] The event type
-     * @param {MenuItem} [target] Target menu item
-     * @param {Record} [data] Event Data
+     * @param {MenuItemEventType} type The event type
+     * @param {MenuItem} target Target menu item
+     * @param {Record} data Event Data
      */
     protected event(type: MenuItemEventType, target?: MenuItem, data?: Record<string, string | number | boolean>): void {
         const event = new MenuEvent(type, this, target, data);
@@ -1020,7 +1030,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         }
 
         if (!this.isRoot) {
-            this.back = Angle.between(angle, (this.parentArc as ArcDefinition).from, (this.parentArc as ArcDefinition).to);
+            this.isInBackNavigationArc = Angle.between(angle, (this.parentArc as ArcDefinition).from, (this.parentArc as ArcDefinition).to);
         }
 
         if (dist < this.settings[SettingsGroup.GEOMETRY].size / 2) {
@@ -1028,7 +1038,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             return;
         }
 
-        if (this.back) {
+        if (this.isInBackNavigationArc) {
             this.resetActiveHovered();
             this.selectionLogicBackOperations();
         } else {
@@ -1117,7 +1127,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             return;
         }
 
-        if (this.back) {
+        if (this.isInBackNavigationArc) {
             this.navigateBack();
             return;
         }
@@ -1137,7 +1147,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         const angle = this.angleToReferencePoint(decisionPoint);
         const localPos = this.globalToLocal(decisionPoint);
 
-        if (!this.isRoot && this.back && CENTER.getDistance(localPos) >= this.settings[SettingsGroup.MAIN].minTraceDistance) {
+        if (!this.isRoot && this.isInBackNavigationArc && CENTER.getDistance(localPos) >= this.settings[SettingsGroup.MAIN].minTraceDistance) {
             this.connector.visible = false;
             this.navigateBack();
             return;
@@ -1177,7 +1187,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         const nearestChild = this.getNearestChild(this.angleToReferencePoint(drag.position));
 
-        if (CENTER.getDistance(localPos) >= this.settings[SettingsGroup.MAIN].minTraceDistance && !this.back) {
+        if (CENTER.getDistance(localPos) >= this.settings[SettingsGroup.MAIN].minTraceDistance && !this.isInBackNavigationArc) {
             nearestChild.stopAnimations();
             nearestChild.position = localPos;
             this.connector.visible = true;
@@ -1247,6 +1257,13 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * @see init
      */
     protected itemReady(): void {
+        this.ready = true;
+    }
+
+    /**
+     * Called pre setup methods
+     */
+    protected preSetup(): void {
     }
 
     /**
