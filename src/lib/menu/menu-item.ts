@@ -982,6 +982,8 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Create arcs from arc definition
      */
     protected createArcs(): void {
+        this.arcGroup.children.length = 0;
+
         this.arcs.forEach((arc: ArcDefinition): void => {
             const arcGeometry = Arc.fromDefinition(arc, this.settings);
             this.arcGroup.addChild(arcGeometry);
