@@ -1,6 +1,7 @@
 import {MenuItemEventType} from "../enums";
 import Angle from "../../utlis/angle";
 import {MenuEventDefinition, MenuIdentifier} from "../interfaces";
+import isEqual from "lodash/isEqual";
 
 /**
  * An event object
@@ -50,15 +51,15 @@ export default class MenuEvent implements MenuEventDefinition {
         const selectionTypeEquals = event.type === this.type;
         const sourceEquals = event.source.itemId === this.source.itemId;
 
-        let targetEquals = false;
+        let targetEquals;
         if (typeof event.target !== "undefined" && typeof this.target !== "undefined") {
             targetEquals = event.target.itemId === this.target.itemId && event.target.angle === this.target.angle;
         } else {
             targetEquals = true;
         }
 
-        //return false;
+        const dataEquals = isEqual(event.data, this.data);
 
-        return selectionTypeEquals && targetEquals && sourceEquals;
+        return selectionTypeEquals && targetEquals && sourceEquals && dataEquals;
     }
 }
