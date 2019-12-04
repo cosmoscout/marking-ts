@@ -40,7 +40,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
     public readonly textContent: string;
 
     /**
-     * The items angle on the parent in child/dot state
+     * The items angle in radians on the parent in child/dot state
      */
     public readonly angle: number;
 
@@ -949,8 +949,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
      */
     protected collectArcAngles(): void {
         let angles: Array<number> = new Array<number>();
-        let filter = false;
-        let addedAngle: number | undefined;
 
         const parentWedgeAngle = Angle.opposite(this.angle);
 
@@ -963,18 +961,13 @@ export default class MenuItem extends Group implements MenuIdentifier {
         });
 
         if (angles.length === 1) {
-            addedAngle = Angle.opposite(angles[0]);
-            angles.push(addedAngle);
+            angles.push(Angle.opposite(angles[0]));
         }
 
         this.arcs = Arc.fromAngles(angles);
 
         if (!this.isRoot) {
             this.parentArc = this.arcs.find((arc: ArcDefinition): boolean => arc.origAngle === parentWedgeAngle);
-        }
-
-        if (filter && addedAngle !== undefined) {
-            this.arcs = this.arcs.filter((arc: ArcDefinition): boolean => arc.origAngle !== addedAngle);
         }
     }
 
