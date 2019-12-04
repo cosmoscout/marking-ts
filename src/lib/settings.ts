@@ -17,6 +17,7 @@ export default class Settings implements SettingsDefinition {
         },
         [SettingsGroup.GEOMETRY]: {
             size: 50,
+            sizeDeadZone: 25,
             color: '#575859',
             selectionColor: '#577a85',
             stroke: {

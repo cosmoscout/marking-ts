@@ -132,6 +132,7 @@ export interface SettingsDefinition {
     };
     readonly [SettingsGroup.GEOMETRY]: {
         size: number;
+        sizeDeadZone: number;
         color: string;
         selectionColor: string;
         stroke: StrokeSettings;

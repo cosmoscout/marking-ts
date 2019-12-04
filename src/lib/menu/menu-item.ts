@@ -1017,23 +1017,11 @@ export default class MenuItem extends Group implements MenuIdentifier {
     protected selectionLogic(angle: number): void {
         const dist: number = CENTER.getDistance(this.globalToLocal(this.menu.inputPosition));
 
-        if (dist >= this.settings[SettingsGroup.RADII].maxClickRadius && this.settings[SettingsGroup.MAIN].enableMaxClickRadius) {
-            this.resetChildColor();
-            (this.arcGroup.children as Item[])
-                .forEach((a: Item): void => {
-                    if (typeof a.data.fx !== "undefined" && a.data.fx.running) {
-                        a.data.fx.stop();
-                    }
-                    a.opacity = 0;
-                });
-            return;
-        }
-
         if (!this.isRoot) {
             this.isInBackNavigationArc = Angle.between(angle, (this.parentArc as ArcDefinition).from, (this.parentArc as ArcDefinition).to);
         }
 
-        if (dist < this.settings[SettingsGroup.GEOMETRY].size / 2) {
+        if (dist < this.settings[SettingsGroup.GEOMETRY].sizeDeadZone) {
             this.selectionLogicInGeometryOperations();
             return;
         }
@@ -1049,7 +1037,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             const nearestChild = this.getNearestChild(angle);
 
             if (this.hoveredChild === nearestChild) {
-                return;
+                //return;
             }
 
             this.selectionLogicHoverOperations(nearestChild);
@@ -1111,7 +1099,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * @param {ClickState} clickState
      */
     protected clickLogic(clickState: ClickState): void {
-        if (CENTER.getDistance(this.globalToLocal(this.menu.inputPosition)) >= this.settings[SettingsGroup.RADII].maxClickRadius && this.settings[SettingsGroup.MAIN].enableMaxClickRadius) {
+        const dist: number = CENTER.getDistance(this.globalToLocal(this.menu.inputPosition));
+
+        if (dist >= this.settings[SettingsGroup.RADII].maxClickRadius && this.settings[SettingsGroup.MAIN].enableMaxClickRadius) {
             this.root.state = ItemState.HIDDEN;
             this.root.redraw();
             return;
@@ -1127,7 +1117,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
             return;
         }
 
-        if (this.isInBackNavigationArc) {
+        if (this.isInBackNavigationArc && dist > this.settings[SettingsGroup.GEOMETRY].sizeDeadZone) {
             this.navigateBack();
             return;
         }
@@ -1183,7 +1173,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
             this.changeActive();
             return;
         }
-
 
         const nearestChild = this.getNearestChild(this.angleToReferencePoint(drag.position));
 
@@ -1326,10 +1315,18 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Animation to hidden
      */
     protected animateStateHidden(): void {
-        const to = {
-            scaling: 0,
-            position: CENTER.subtract(this.position as Point).add((this.position as Point).multiply(this.settings[SettingsGroup.SCALES].dot))
-        };
+        let to;
+
+        if (this.isRoot) {
+            to = {
+                scaling: 0
+            }
+        } else {
+            to = {
+                scaling: 0,
+                position: CENTER.subtract(this.position as Point).add((this.position as Point).multiply(this.settings[SettingsGroup.SCALES].dot))
+            };
+        }
 
         this._animations.push(
             new Animation({
