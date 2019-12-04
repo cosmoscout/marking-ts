@@ -42,14 +42,14 @@ export default class Angle {
     /**
      * Calculates the difference between two angles
      *
-     * @param {number} angleA First angle in radians
-     * @param {number} angleB Second angle in radians
+     * @param {number} radAngleA First angle in radians
+     * @param {number} radAngleB Second angle in radians
      * @param {boolean} [biggest=false] Return the biggest difference
      * @return {number}
      */
-    public static difference(angleA: number, angleB: number, biggest: boolean = false): number {
-        const abs = Math.abs(angleA - angleB);
-        const absReflex = 2 * Math.PI - Math.abs(angleA - angleB);
+    public static difference(radAngleA: number, radAngleB: number, biggest: boolean = false): number {
+        const abs = Math.abs(radAngleA - radAngleB);
+        const absReflex = 2 * Math.PI - Math.abs(radAngleA - radAngleB);
 
         if (biggest) {
             return Math.max(abs, absReflex);
@@ -61,13 +61,13 @@ export default class Angle {
     /**
      * Calculates the bisecting angle of two angles
      *
-     * @param {number} startAngle Starting angle in radians
-     * @param {number} endAngle Ending angle in radians
-     * @param {boolean} [inDegrees=true] Return the angle in degrees
+     * @param {number} startAngleRad Starting angle in radians
+     * @param {number} endAngleRad Ending angle in radians
+     * @param {boolean} inDegrees=true Return the angle in degrees
      * @return {number}
      */
-    public static bisecting(startAngle: number, endAngle: number, inDegrees: boolean = false): number {
-        const result = (startAngle + Math.abs((endAngle < startAngle ? Angle.HALF_CIRCLE_RAD : 0) - Math.abs(startAngle - endAngle) / 2)) % Angle.FULL_CIRCLE_RAD;
+    public static bisecting(startAngleRad: number, endAngleRad: number, inDegrees: boolean = false): number {
+        const result = (startAngleRad + Math.abs((endAngleRad < startAngleRad ? Angle.HALF_CIRCLE_RAD : 0) - Math.abs(startAngleRad - endAngleRad) / 2)) % Angle.FULL_CIRCLE_RAD;
 
         if (inDegrees) {
             return Angle.toDeg(result);
@@ -83,10 +83,10 @@ export default class Angle {
      *  360 - 180
      *  ...
      *
-     * @param {number} angle Angle in radians
+     * @param {number} angleRad Angle in radians
      */
-    public static opposite(angle: number): number {
-        return (Math.PI + angle) % (2 * Math.PI);
+    public static opposite(angleRad: number): number {
+        return (Math.PI + angleRad) % (2 * Math.PI);
     }
 
     /**
