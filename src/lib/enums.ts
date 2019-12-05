@@ -39,7 +39,8 @@ export enum MenuItemEventType {
     HOVER = 'itemHover',
     HOVER_SELECTION = 'itemSelectionHover',
 
-    SLIDER_VALUE_CHANGED = 'sliderValueChanged'
+    SLIDER_VALUE_CHANGING = 'sliderValueChanging',
+    SLIDER_VALUE_FINAL = 'sliderValueFinal',
 }
 
 /**

@@ -18,6 +18,7 @@ import throttle from 'lodash/throttle'
 import Animation from "../../utlis/animation";
 import Angle from "../../utlis/angle";
 import Arc from "../../utlis/arc";
+import {precision, roundNumber} from "../../utlis/numbers";
 
 export default class Ribbonslider extends MenuItem {
     /**
@@ -283,7 +284,14 @@ export default class Ribbonslider extends MenuItem {
         } else {
             this.ribbonGroup.position.x = pos;
         }
-        this.event(MenuItemEventType.SLIDER_VALUE_CHANGED, this, {
+
+        let eventType = MenuItemEventType.SLIDER_VALUE_CHANGING;
+
+        if (!this.dragging) {
+            eventType = MenuItemEventType.SLIDER_VALUE_FINAL;
+        }
+
+        this.event(eventType, this, {
             'value': value,
         });
     }
@@ -334,6 +342,19 @@ export default class Ribbonslider extends MenuItem {
      * @param drag
      */
     protected dragLogic(drag: DragDefinition): void {
+        if (drag.state === DragState.END) {
+            this.moveRibbonToValuePosition(this.value, true);
+            this.prevDragPosition = undefined;
+            this.dragging = false;
+            this.ribbon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
+
+            this.event(MenuItemEventType.SLIDER_VALUE_FINAL, this, {
+                value: this.value,
+            });
+
+            return;
+        }
+
         this.dragging = true;
 
         if (this.prevDragPosition === undefined) {
@@ -345,7 +366,8 @@ export default class Ribbonslider extends MenuItem {
 
         const percentage = (Math.abs(this.ribbonGroup.position.x) / (this.getRibbonLength() || 1));
 
-        let value = this.configuration.stepSize * Math.round(percentage * (this.configuration.max - this.configuration.min) / this.configuration.stepSize) + this.configuration.min;
+        let value = this.configuration.precision * Math.round(percentage * (this.configuration.max - this.configuration.min) / this.configuration.precision) + this.configuration.min;
+        value = roundNumber(value, precision(this.configuration.precision));
 
         this.value = Math.min(Math.max(value, this.configuration.min), this.configuration.max);
 
@@ -356,15 +378,6 @@ export default class Ribbonslider extends MenuItem {
         }
 
         this.prevDragPosition = drag.position;
-
-        if (drag.state === DragState.END) {
-            this.moveRibbonToValuePosition(this.value, true);
-            this.prevDragPosition = undefined;
-            this.dragging = false;
-            this.ribbon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
-        }
-
-        return;
     }
 
     /**
@@ -628,18 +641,21 @@ export default class Ribbonslider extends MenuItem {
             this.menu.canvas.style.cursor = "ew-resize";
         };
         const textOnClick = (e: PaperMouseEvent) => {
-            this.updateRibbonPosition(-(e.target.position.x + this.ribbonGroup.position.x - Ribbonslider.GRADIENT_LENGTH / 2), true);
             this.value = e.target.data.value;
+            this.moveRibbonToValuePosition(this.value, true);
         };
 
 
         for (let i = 0; i <= this.getRibbonLength() / (this.configuration.stepDist / 2); i++) {
             if (i % 2 === 0) {
+
                 let valueText = (this.text.clone() as PointText);
                 if (this.inSnappingRange()) {
                     valueText.rotate(90);
                 }
-                let stepValue = Math.round((this.configuration.min + i * this.configuration.stepSize / 2) * 100) / 100;
+
+                let stepValue = Math.round((this.configuration.min + i * this.getPrecision() / 2) * 100) / 100;
+
                 valueText.position = new Point(i * (this.configuration.stepDist / 2) + Ribbonslider.GRADIENT_LENGTH / 2, Ribbonslider.RIBBON_HEIGHT / 2);
                 valueText.content = '' + stepValue;
                 valueText.data.value = stepValue;
@@ -735,9 +751,12 @@ export default class Ribbonslider extends MenuItem {
      * Calculate the ribbon length
      */
     private getRibbonLength(): number {
-        return ((this.configuration.max - this.configuration.min) / this.configuration.stepSize) * this.configuration.stepDist;
+        return ((this.configuration.max - this.configuration.min) / this.getPrecision()) * this.configuration.stepDist;
     }
 
+    private getPrecision(): number {
+        return (typeof this.configuration.stepSize !== "undefined") ? this.configuration.stepSize : this.configuration.precision;
+    }
 
     /**
      * Updates the ribbon position
@@ -778,7 +797,7 @@ export default class Ribbonslider extends MenuItem {
             this.ribbonGroup.position.x = positionX;
         }
 
-        this.event(MenuItemEventType.SLIDER_VALUE_CHANGED, this, {
+        this.event(MenuItemEventType.SLIDER_VALUE_CHANGING, this, {
             'value': this.value,
         });
     }
