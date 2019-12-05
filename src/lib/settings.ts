@@ -38,6 +38,14 @@ export default class Settings implements SettingsDefinition {
             selectionColor: '#529b1e',
             cornerRadius: 25,
         },
+        [SettingsGroup.RIBBONSLIDER]: {
+            gradientColor: 'rgba(62, 62, 64, 1.0)',
+            gradientColorSides: 'rgba(32, 32, 32, 0)',
+            maskStart: 0.1,
+            maskLengthMultiplier: 0.6,
+            gradientLength: 150,
+            ribbonHeight: 60,
+        },
         [SettingsGroup.CONNECTOR]: {
             enabled: true,
             color: '#393a3c',
@@ -117,6 +125,10 @@ export default class Settings implements SettingsDefinition {
 
     public get [SettingsGroup.CHECKBOX](): SettingsDefinition[SettingsGroup.CHECKBOX] {
         return this._settings[SettingsGroup.CHECKBOX];
+    }
+
+    public get [SettingsGroup.RIBBONSLIDER](): SettingsDefinition[SettingsGroup.RIBBONSLIDER] {
+        return this._settings[SettingsGroup.RIBBONSLIDER];
     }
 
     public get projectStyle(): Record<string, string | number> {

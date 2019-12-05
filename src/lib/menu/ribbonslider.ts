@@ -22,22 +22,6 @@ import {precision, roundNumber} from "../../utlis/numbers";
 
 export default class Ribbonslider extends MenuItem {
     /**
-     * The length in px of the dark gradient
-     */
-    private static GRADIENT_LENGTH: number = 150;
-
-    /**
-     * Ribbon height in px
-     */
-    private static RIBBON_HEIGHT: number = 60;
-
-    /**
-     * Multiplier for the fade out mask
-     * Width = canvas width * multiplier
-     */
-    private static MASK_LENGTH_MULTIPLIER = 0.6;
-
-    /**
      * Group holding
      * - Ribbon
      * - Texts
@@ -308,7 +292,14 @@ export default class Ribbonslider extends MenuItem {
      * Created pre setup to utilize setGeometryColorDefault & setGeometryColorSelected
      */
     protected preSetup(): void {
-        this.childIndicator = new Path.Rectangle(ZERO_POINT, new Point(Ribbonslider.GRADIENT_LENGTH * 0.8, Ribbonslider.RIBBON_HEIGHT * 0.8));
+        this.childIndicator = new Path.Rectangle(
+            ZERO_POINT,
+            new Point(
+                this.settings[SettingsGroup.RIBBONSLIDER].gradientLength * 0.8,
+                this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight * 0.8
+            )
+        );
+
         this.childIndicator.position = ZERO_POINT;
         this.childIndicator.strokeScaling = false;
     }
@@ -613,10 +604,21 @@ export default class Ribbonslider extends MenuItem {
      */
     private setupRibbon(): void {
         this._ribbonGroup = new Group({blendMode: 'source-in'});
-        this._ribbon = new Path.Rectangle(ZERO_POINT, new Point(this.getRibbonLength() + Ribbonslider.GRADIENT_LENGTH, Ribbonslider.RIBBON_HEIGHT));
+        this._ribbon = new Path.Rectangle(
+            ZERO_POINT,
+            new Point(
+                this.getRibbonLength() + this.settings[SettingsGroup.RIBBONSLIDER].gradientLength,
+                this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight
+            )
+        );
 
         this.ribbonGroup.addChild(this.ribbon);
-        this.ribbonGroup.pivot = this.ribbonGroup.bounds.leftCenter.add(new Point(Ribbonslider.GRADIENT_LENGTH / 2, 0));
+        this.ribbonGroup.pivot = this.ribbonGroup.bounds.leftCenter.add(
+            new Point(
+                this.settings[SettingsGroup.RIBBONSLIDER].gradientLength / 2,
+                0
+            )
+        );
         this.ribbonGroup.position = CENTER;
 
         this.ribbon.onMouseEnter = () => {
@@ -647,6 +649,11 @@ export default class Ribbonslider extends MenuItem {
 
 
         for (let i = 0; i <= this.getRibbonLength() / (this.configuration.stepDist / 2); i++) {
+            const position = new Point(
+                i * (this.configuration.stepDist / 2) + this.settings[SettingsGroup.RIBBONSLIDER].gradientLength / 2,
+                this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight / 2
+            );
+
             if (i % 2 === 0) {
 
                 let valueText = (this.text.clone() as PointText);
@@ -656,7 +663,8 @@ export default class Ribbonslider extends MenuItem {
 
                 let stepValue = Math.round((this.configuration.min + i * this.getPrecision() / 2) * 100) / 100;
 
-                valueText.position = new Point(i * (this.configuration.stepDist / 2) + Ribbonslider.GRADIENT_LENGTH / 2, Ribbonslider.RIBBON_HEIGHT / 2);
+                valueText.position = position;
+
                 valueText.content = '' + stepValue;
                 valueText.data.value = stepValue;
 
@@ -667,7 +675,7 @@ export default class Ribbonslider extends MenuItem {
                 valueText.onClick = textOnClick;
                 this.ribbonGroup.addChild(valueText);
             } else {
-                let dots = this.grabDot.place(new Point(i * (this.configuration.stepDist / 2) + Ribbonslider.GRADIENT_LENGTH / 2, Ribbonslider.RIBBON_HEIGHT / 2));
+                let dots = this.grabDot.place(position);
                 dots.onMouseEnter = onMouseEnterResize;
 
                 this.ribbonGroup.addChild(dots);
@@ -680,15 +688,21 @@ export default class Ribbonslider extends MenuItem {
      * @see {_gradient}
      */
     private setupGradient(): void {
-        this._gradient = new Path.Rectangle(ZERO_POINT, new Point(Ribbonslider.GRADIENT_LENGTH, Ribbonslider.RIBBON_HEIGHT));
+        this._gradient = new Path.Rectangle(
+            ZERO_POINT,
+            new Point(
+                this.settings[SettingsGroup.RIBBONSLIDER].gradientLength,
+                this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight - this.settings[SettingsGroup.GEOMETRY].stroke.width
+            )
+        );
         this.gradient.bounds.center = CENTER;
         this.gradient.strokeWidth = 0;
 
         let gradient = ColorFactory.fromArray([
-            'rgba(32, 32, 32, 0)',
-            [this.settings[SettingsGroup.GEOMETRY].stroke.color, 0.3], // 30%
-            [this.settings[SettingsGroup.GEOMETRY].stroke.color, 0.7], // 70%
-            'rgba(32, 32, 32, 0)',
+            this.settings[SettingsGroup.RIBBONSLIDER].gradientColorSides,
+            [this.settings[SettingsGroup.RIBBONSLIDER].gradientColor, 0.3], // 30%
+            [this.settings[SettingsGroup.RIBBONSLIDER].gradientColor, 0.7], // 70%
+            this.settings[SettingsGroup.RIBBONSLIDER].gradientColorSides,
         ]) as Gradient;
 
         this.gradient.fillColor = new Color(
@@ -730,14 +744,20 @@ export default class Ribbonslider extends MenuItem {
      * @see {itemReady}
      */
     private createMask(): Path.Rectangle {
-        let mask = new Path.Rectangle(ZERO_POINT, new Point(this.menu.canvas.width * Ribbonslider.MASK_LENGTH_MULTIPLIER, Ribbonslider.RIBBON_HEIGHT + 2));
+        let mask = new Path.Rectangle(
+            ZERO_POINT,
+            new Point(
+                this.menu.canvas.width * this.settings[SettingsGroup.RIBBONSLIDER].maskLengthMultiplier,
+                this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight + 2
+            )
+        );
         mask.bounds.center = CENTER;
         mask.strokeWidth = 0;
 
         let gradient = ColorFactory.fromArray([
             'rgba(0, 0, 0, 0)',
-            ['#000', 0.1], // 10%
-            ['#000', 0.9], // 90%
+            ['#000', this.settings[SettingsGroup.RIBBONSLIDER].maskStart], // 10%
+            ['#000', 1 - this.settings[SettingsGroup.RIBBONSLIDER].maskStart], // 90%
             'rgba(0, 0, 0, 0)',
         ]) as Gradient;
 
@@ -769,13 +789,13 @@ export default class Ribbonslider extends MenuItem {
         let positionX: number = 0;
 
         if (delta >= 0) {
-            if (this.ribbonGroup.bounds.leftCenter.x + (Ribbonslider.GRADIENT_LENGTH / 2) + delta <= 0) {
+            if (this.ribbonGroup.bounds.leftCenter.x + (this.settings[SettingsGroup.RIBBONSLIDER].gradientLength / 2) + delta <= 0) {
                 positionX = this.ribbonGroup.position.x + delta;
             } else {
                 positionX = 0;
             }
         } else if (delta < 0) {
-            if (this.ribbonGroup.bounds.rightCenter.x - (Ribbonslider.GRADIENT_LENGTH / 2) + delta >= 0) {
+            if (this.ribbonGroup.bounds.rightCenter.x - (this.settings[SettingsGroup.RIBBONSLIDER].gradientLength / 2) + delta >= 0) {
                 positionX = this.ribbonGroup.position.x + delta;
             } else {
                 positionX = -this.getRibbonLength();

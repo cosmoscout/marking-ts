@@ -148,6 +148,22 @@ export interface SettingsDefinition {
         selectionColor: string;
         cornerRadius: number;
     };
+    /**
+     * gradientColor: Color of the inner gradient
+     * gradientColorSides: Side Colors (Side Color | Gradient Color | Side Color)
+     * gradientLength: Gradient Length in px
+     * ribbonHeight: Height in px of the ribbon
+     * maskStart: Start (0 - 0.49)
+     * maskLengthMultiplier: Window width * multiplier = Mask Length
+     */
+    readonly [SettingsGroup.RIBBONSLIDER]: {
+        gradientColor: string;
+        gradientColorSides: string;
+        gradientLength: number;
+        ribbonHeight: number;
+        maskStart: number;
+        maskLengthMultiplier: number;
+    };
     readonly [SettingsGroup.CONNECTOR]: {
         enabled: boolean;
         color: string;

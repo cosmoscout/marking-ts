@@ -70,4 +70,5 @@ export enum SettingsGroup {
     SCALES = 'scales',
     RADII = 'radii',
     CHECKBOX = 'checkbox',
+    RIBBONSLIDER = 'ribbonslider',
 }
