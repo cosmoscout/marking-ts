@@ -149,8 +149,8 @@ export default class Ribbonslider extends MenuItem {
             data.initial = data.min;
         }
 
-        if (Math.floor(data.initial % data.stepSize) !== 0) {
-            throw new Error(`Slider (${this.itemId}): 'initial' is not achievable with 'stepSize'`);
+        if (Math.floor(data.initial % data.precision) !== 0) {
+            throw new Error(`Slider (${this.itemId}): 'initial' is not achievable with 'precision'`);
         }
 
         if (typeStepSize === "undefined") {
