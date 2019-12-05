@@ -65,11 +65,8 @@ export default class Checkbox extends MenuItem {
      */
     protected setGeometryColorHovered() {
         if (this.itemSelected) {
-            let color = ColorFactory.fromString(this.settings[SettingsGroup.CHECKBOX].selectionColor);
-            color.saturation -= 0.25;
-            this.geometry.fillColor = color;
+            this.geometry.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.CHECKBOX].selectionColorSelected);
         } else {
-            // Blue Selection Color
             super.setGeometryColorSelected();
         }
     }

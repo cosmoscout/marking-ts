@@ -148,6 +148,7 @@ export interface SettingsDefinition {
     };
     readonly [SettingsGroup.CHECKBOX]: {
         selectionColor: string;
+        selectionColorSelected: string;
         cornerRadius: number;
     };
     /**

@@ -38,6 +38,7 @@ export default class Settings implements SettingsDefinition {
         },
         [SettingsGroup.CHECKBOX]: {
             selectionColor: '#529b1e',
+            selectionColorSelected: '#396e14',
             cornerRadius: 25,
         },
         [SettingsGroup.RIBBONSLIDER]: {
