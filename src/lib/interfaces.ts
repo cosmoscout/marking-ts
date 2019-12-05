@@ -139,9 +139,11 @@ export interface SettingsDefinition {
         useActionShape: boolean;
         text: {
             color: string;
+            selectionColor: string;
         };
         icon: {
             color: string;
+            selectionColor: string;
         };
     };
     readonly [SettingsGroup.CHECKBOX]: {

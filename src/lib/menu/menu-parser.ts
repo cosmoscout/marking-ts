@@ -53,7 +53,7 @@ export default class MenuParser {
                         break;
 
                     default:
-                        throw new Error('type is not in crankslider, ribbonslider');
+                        throw new Error('Structure Type not known.');
                 }
             }
 

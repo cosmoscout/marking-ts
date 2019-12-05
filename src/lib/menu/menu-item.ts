@@ -427,7 +427,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
         this.geometryGroup.position = CENTER;
         this.geometryGroup.visible = true;
-        this.setGeometryColorDefault();
+        this.setColorDefault();
 
         this.icon.visible = true;
         this.icon.opacity = 1;
@@ -735,7 +735,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
                 this._icon = new CompoundPath((icon.icon[4] as string));
 
                 this.icon.scale(this.settings[SettingsGroup.SCALES].icon.base * this.settings[SettingsGroup.SCALES].icon.solo); // Default Size = 512px   1/16 = 0.0625 = 32px
-                this.icon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].icon.color);
+                this.setIconColorDefault();
                 this.icon.strokeWidth = 0;
                 this.icon.position = CENTER;
             }
@@ -751,7 +751,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.text.justification = 'center';
         this.text.fontSize = '16px';
         this.text.fontWeight = 'bold';
-        this.text.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].text.color);
+        this.setTextColorDefault();
         this.text.strokeWidth = 0;
         this.updateText(this.textContent || '');
         this.text.position = CENTER;
@@ -995,10 +995,10 @@ export default class MenuItem extends Group implements MenuIdentifier {
 
     protected resetChildColor(): void {
         this.getChildren().forEach((child: MenuItem): void => {
-            child.setGeometryColorDefault();
+            child.setColorDefault();
 
             child.getChildren().forEach((childChild: MenuItem): void => {
-                childChild.setGeometryColorDefault();
+                childChild.setColorDefault();
             });
         });
     };
@@ -1073,9 +1073,9 @@ export default class MenuItem extends Group implements MenuIdentifier {
         this.resetChildColor();
 
         this.hoveredChild = nearestChild;
-        this.hoveredChild.setGeometryColorHovered();
+        this.hoveredChild.setColorHovered();
         this.hoveredChild.getChildren().forEach((child: MenuItem): void => {
-            child.setGeometryColorHovered();
+            child.setColorHovered();
         });
 
         if (this.hoveredChild.isLeaf) {
@@ -1286,6 +1286,106 @@ export default class MenuItem extends Group implements MenuIdentifier {
      */
     protected setGeometryColorHovered(): void {
         this.setGeometryColorSelected();
+    }
+
+    /**
+     * Set geometry fill color to default.
+     * Default fill color.
+     */
+    protected setTextColorDefault(): void {
+        this.text.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].text.color);
+    }
+
+    /**
+     * Set geometry fill color to selected.
+     * This is the color upon a final selection.
+     */
+    protected setTextColorSelected(): void {
+        this.text.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].text.selectionColor);
+    }
+
+    /**
+     * Set geometry fill color to active selected
+     * This is the color if the item is actively selected. (User can still navigate back).
+     */
+    protected setTextColorActiveSelected(): void {
+        this.setTextColorSelected();
+    }
+
+    /**
+     * Set geometry fill color to hovered.
+     * This is the color if the input device hovers over the item.
+     */
+    protected setTextColorHovered(): void {
+        this.setTextColorSelected();
+    }
+
+    /**
+     * Set geometry fill color to default.
+     * Default fill color.
+     */
+    protected setIconColorDefault(): void {
+        this.icon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].icon.color);
+    }
+
+    /**
+     * Set geometry fill color to selected.
+     * This is the color upon a final selection.
+     */
+    protected setIconColorSelected(): void {
+        this.icon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].icon.selectionColor);
+    }
+
+    /**
+     * Set geometry fill color to active selected
+     * This is the color if the item is actively selected. (User can still navigate back).
+     */
+    protected setIconColorActiveSelected(): void {
+        this.setIconColorSelected();
+    }
+
+    /**
+     * Set geometry fill color to hovered.
+     * This is the color if the input device hovers over the item.
+     */
+    protected setIconColorHovered(): void {
+        this.setIconColorSelected();
+    }
+
+    /**
+     * Calls set default color on geometry, text and icon
+     */
+    protected setColorDefault() {
+        this.setGeometryColorDefault();
+        this.setTextColorDefault();
+        this.setIconColorDefault();
+    }
+
+    /**
+     * Calls set selected color on geometry, text and icon
+     */
+    protected setColorSelected() {
+        this.setGeometryColorSelected();
+        this.setTextColorSelected();
+        this.setIconColorSelected();
+    }
+
+    /**
+     * Calls set active selected color on geometry, text and icon
+     */
+    protected setColorActiveSelected() {
+        this.setGeometryColorActiveSelected();
+        this.setTextColorActiveSelected();
+        this.setIconColorActiveSelected();
+    }
+
+    /**
+     * Calls set hover color on geometry, text and icon
+     */
+    protected setColorHovered() {
+        this.setGeometryColorHovered();
+        this.setTextColorHovered();
+        this.setIconColorHovered();
     }
 
     /**
@@ -1613,7 +1713,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Animation to Selected
      */
     protected animateStateSelected(): void {
-        this.setGeometryColorSelected();
+        this.setColorSelected();
         this.icon.opacity = MenuItem.ICON_BG_OPACITY;
 
         this._animations.push(
@@ -1638,7 +1738,7 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Animation to Active Selection
      */
     protected animateStateActiveSelection(): void {
-        this.setGeometryColorActiveSelected();
+        this.setColorActiveSelected();
 
         this._animations.push(
             new Animation({

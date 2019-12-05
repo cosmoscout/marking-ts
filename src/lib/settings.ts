@@ -29,9 +29,11 @@ export default class Settings implements SettingsDefinition {
             useActionShape: true,
             text: {
                 color: '#fff',
+                selectionColor: '#fff',
             },
             icon: {
                 color: '#fff',
+                selectionColor: '#fff',
             }
         },
         [SettingsGroup.CHECKBOX]: {
