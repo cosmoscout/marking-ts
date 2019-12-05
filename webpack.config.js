@@ -32,6 +32,7 @@ module.exports = {
         ]
     },
 
+/*
     optimization: {
         splitChunks: {
             cacheGroups: {
@@ -47,13 +48,14 @@ module.exports = {
             }
         }
     },
+*/
 
     plugins: [
         new ForkTsCheckerWebpackPlugin(),
-        new HTMLWebpackPlugin({
+/*        new HTMLWebpackPlugin({
             title: 'Marking-TS',
             template: path.resolve(__dirname, 'public/index.html')
-        })
+        })*/
     ],
     externals: [
         {
