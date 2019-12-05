@@ -17,7 +17,6 @@ import ColorFactory from "../../utlis/color-factory";
 import throttle from 'lodash/throttle'
 import Animation from "../../utlis/animation";
 import Angle from "../../utlis/angle";
-import {precision, roundNumber} from "../../utlis/numbers";
 import Arc from "../../utlis/arc";
 
 export default class Ribbonslider extends MenuItem {
@@ -266,14 +265,15 @@ export default class Ribbonslider extends MenuItem {
             throw RangeError(`Slider (${this.itemId}): 'value' out of slider range`);
         }
 
-        const positionX = -(this.configuration.stepDist * ((value - this.configuration.min) / this.configuration.stepSize));
+        const percentage = (value - this.configuration.min) / (this.configuration.max - this.configuration.min);
+        const pos = -((!Number.isNaN(percentage)) ? percentage * this.getRibbonLength() : 0);
 
         // Todo consolidate into separate method
         if (animated) {
             new Animation({
                 target: this.ribbonGroup,
                 to: {
-                    'position.x': positionX
+                    'position.x': pos
                 },
                 options: {
                     duration: this.settings[SettingsGroup.MAIN].animationDuration,
@@ -281,7 +281,7 @@ export default class Ribbonslider extends MenuItem {
                 }
             }).start();
         } else {
-            this.ribbonGroup.position.x = positionX;
+            this.ribbonGroup.position.x = pos;
         }
         this.event(MenuItemEventType.SLIDER_VALUE_CHANGED, this, {
             'value': value,
@@ -341,14 +341,13 @@ export default class Ribbonslider extends MenuItem {
             this.prevDragPosition = drag.position;
         }
 
-        const value = this.configuration.min - (this.ribbonGroup.position.x / this.configuration.stepDist) * this.configuration.stepSize;
-        const numberPrecision = precision(this.configuration.stepSize);
+        this.ribbon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
 
-        if (numberPrecision === 0) {
-            this.value = Math.round(value);
-        } else {
-            this.value = roundNumber(value, numberPrecision);
-        }
+        const percentage = (Math.abs(this.ribbonGroup.position.x) / (this.getRibbonLength() || 1));
+
+        let value = this.configuration.stepSize * Math.round(percentage * (this.configuration.max - this.configuration.min) / this.configuration.stepSize) + this.configuration.min;
+
+        this.value = Math.min(Math.max(value, this.configuration.min), this.configuration.max);
 
         if (this.inSnappingRange()) {
             this.updateRibbonPosition(this.prevDragPosition.y - drag.position.y);
@@ -362,6 +361,7 @@ export default class Ribbonslider extends MenuItem {
             this.moveRibbonToValuePosition(this.value, true);
             this.prevDragPosition = undefined;
             this.dragging = false;
+            this.ribbon.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
         }
 
         return;
@@ -375,7 +375,7 @@ export default class Ribbonslider extends MenuItem {
 
         if (this.getPositionToTest() > this.settings[SettingsGroup.GEOMETRY].sizeDeadZone) {
             if (this.done) {
-                this.root.state = ItemState.HIDDEN;
+                this.state = ItemState.SELECTED;
                 this.root.redraw();
             } else {
                 super.clickLogic(clickState);
@@ -433,7 +433,6 @@ export default class Ribbonslider extends MenuItem {
      */
     protected setGroupsVisibility(): void {
         super.setGroupsVisibility();
-        this.lineGroup.visible = false;
 
         this.text.visible = true;
         this.icon.opacity = 0;
@@ -544,6 +543,8 @@ export default class Ribbonslider extends MenuItem {
             this.childIndicator.visible = false;
             this.gradient.visible = true;
 
+        } else if (this.state === ItemState.SELECTED) {
+
         } else {
             this.ribbonMaskGroup.visible = false;
             this.childIndicator.visible = true;
@@ -570,7 +571,6 @@ export default class Ribbonslider extends MenuItem {
     }
 
     protected setGeometryColorSelected(): void {
-        super.setGeometryColorSelected();
         this.childIndicator.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
     }
 
@@ -643,7 +643,7 @@ export default class Ribbonslider extends MenuItem {
                 valueText.position = new Point(i * (this.configuration.stepDist / 2) + Ribbonslider.GRADIENT_LENGTH / 2, Ribbonslider.RIBBON_HEIGHT / 2);
                 valueText.content = '' + stepValue;
                 valueText.data.value = stepValue;
-                /*                valueText.onMouseEnter = onMouseEnterPointer;*/
+
                 valueText.onMouseLeave = (e: PaperMouseEvent) => {
                     onMouseLeave();
                     e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].text.color);
