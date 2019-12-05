@@ -422,6 +422,7 @@ export default class Menu implements MenuData {
     /**
      * Sets up observables from PointerEvent
      */
+    // @ts-ignore for now
     private setupObservableDataFromPointerEvents(): void {
         const inputMove = this.createObserver('pointermove');
         const inputUp = merge(this.createObserver('pointerup'), this.createObserver('pointercancel'));
