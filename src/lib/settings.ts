@@ -1,4 +1,5 @@
-import merge from 'lodash/merge';
+import mergeWith from 'lodash/mergeWith';
+import isArray from 'lodash/isArray';
 import {SettingsGroup} from "./enums";
 import {SettingsDefinition} from "./interfaces";
 
@@ -77,7 +78,13 @@ export default class Settings implements SettingsDefinition {
     private readonly _settings: SettingsDefinition;
 
     public constructor(settings: Record<string, any> | SettingsDefinition = {}) {
-        this._settings = merge(this._defaultSettings, settings);
+        const mergeCopyArrays = (objValue: any, srcValue: any) => {
+            if (isArray(objValue)) {
+                return srcValue;
+            }
+        };
+
+        this._settings = mergeWith(this._defaultSettings, settings, mergeCopyArrays);
     }
 
     public get defaultSettings(): SettingsDefinition {
