@@ -13,12 +13,13 @@ import Animation, {AnimationGroup} from "../../utlis/animation";
 import {DEFAULT_SCALE, REFERENCE_POINT, ZERO_POINT as CENTER} from "../constants";
 import {ArcDefinition, DragDefinition, MenuData, MenuEventDefinition, MenuIdentifier} from "../interfaces";
 import MenuEvent from "./menu-event";
+import Base from "./Base";
 
 /**
  * Class representing a single Menu Entry
  * Can contain one or more Child Menus
  */
-export default class MenuItem extends Group implements MenuIdentifier {
+export default class MenuItem extends Base implements MenuIdentifier {
     /**
      * Icon opacity if item is active and text is displayed
      */
@@ -858,10 +859,6 @@ export default class MenuItem extends Group implements MenuIdentifier {
      * Navigate to currently active child
      */
     protected changeActive(): void {
-        if (this.state !== ItemState.ACTIVE) {
-            return;
-        }
-
         this.activeChild = this.getNearestChild(this.angleToReferencePoint(this.menu.inputPosition));
 
         this.state = ItemState.SUBMENU;
