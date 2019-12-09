@@ -15,6 +15,7 @@ export default class Settings implements SettingsDefinition {
             minTraceDistance: 175,
             animationDuration: 250,
             enableMaxClickRadius: true,
+            enableAutoResize: true,
         },
         [SettingsGroup.GEOMETRY]: {
             size: 50,

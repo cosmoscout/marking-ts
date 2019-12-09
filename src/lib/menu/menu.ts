@@ -1,5 +1,5 @@
 import {fromEvent, merge, Observable, Subject} from 'rxjs';
-import {Group, PaperScope, Path, Point, Project} from 'paper';
+import {Group, PaperScope, Path, Point, Project, Size} from 'paper';
 import MenuItem from "./menu-item";
 import Settings from "../settings";
 import {ClickState, DragState, ItemState, SettingsGroup} from "../enums";
@@ -261,6 +261,12 @@ export default class Menu implements MenuData {
         this.setupScope();
         this.setupObservables();
 
+        if (this._settings[SettingsGroup.MAIN].enableAutoResize) {
+            window.addEventListener('resize', () => {
+                this.resize();
+            });
+        }
+
         if (typeof window.PointerEvent === "undefined") {
             this.setupObservableDataFromInputEvents();
         } else {
@@ -319,6 +325,17 @@ export default class Menu implements MenuData {
                 easing: 'easeOutCubic'
             }
         });
+    }
+
+    /**
+     * Set the canvas size to window.innerWidth / height
+     */
+    public resize(): void {
+        if (!window) {
+            return;
+        }
+
+        this._scope.project.view.viewSize = new Size(window.innerWidth, window.innerHeight);
     }
 
     /**

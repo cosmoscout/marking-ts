@@ -129,6 +129,7 @@ export interface SettingsDefinition {
         minTraceDistance: number;
         animationDuration: number;
         enableMaxClickRadius: boolean;
+        enableAutoResize: boolean;
     };
     readonly [SettingsGroup.GEOMETRY]: {
         size: number;
