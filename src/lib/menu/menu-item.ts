@@ -1441,7 +1441,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
             })
         );
 
-        this._animations.onFinish$.subscribe((): void => {
+        this._animations.onFinish$((): void => {
             (new Animation({
                 target: this.arcGroup,
                 from: {
@@ -1598,13 +1598,13 @@ export default class MenuItem extends Base implements MenuIdentifier {
             }),
         );
 
-        this._animations.onStop$.subscribe((): void => {
+        this._animations.onStop$((): void => {
             parent.connector.lastSegment.point = CENTER;
             parent.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
             parent.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
         });
 
-        this._animations.onFinish$.subscribe((): void => {
+        this._animations.onFinish$((): void => {
             parent.connector.visible = false;
             parent.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
             parent.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
@@ -1692,7 +1692,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
             }),
         );
 
-        this._animations.onStop$.subscribe((): void => {
+        this._animations.onStop$((): void => {
             this.connector.lastSegment.point = itemPos;
         });
 
@@ -1725,7 +1725,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
             })
         );
 
-        this._animations.onFinish$.subscribe((): void => {
+        this._animations.onFinish$((): void => {
             this.root.state = ItemState.HIDDEN;
             this.root.visible = false;
         });
@@ -1746,7 +1746,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
             })
         );
 
-        this._animations.onFinish$.subscribe((): void => {
+        this._animations.onFinish$((): void => {
             (new Animation({
                 target: this.arcGroup,
                 from: {
