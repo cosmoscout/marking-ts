@@ -355,6 +355,7 @@ export default class Menu implements MenuData {
         this._canvas.setAttribute('data-paper-resize', 'true');
         this._canvas.setAttribute('tabindex', '1');
         (this._canvas.style as any)['touch-action'] = 'none';
+        (this._canvas.style as any)['outline'] = 'none';
 
         this._root.appendChild(this._canvas);
     }
