@@ -1,37 +1,21 @@
 import {Item, Point, Tween} from 'paper';
 import {DEFAULT_SCALE} from "../lib/constants";
-import {combineLatest, forkJoin, from, fromEvent, Observable, Subject} from "rxjs";
-import {map, mergeAll} from "rxjs/operators";
-import {AnimatableData, AnimationDefinition, AnimationOptions, AnimationProgress} from "../lib/interfaces";
+import {AnimatableData, AnimationDefinition, AnimationOptions} from "../lib/interfaces";
 
 export abstract class IAnimation {
     /**
-     * Observable which emits if the animation starts
+     * Callback to run on Animation stop
      *
-     * @return {Observable<Tween>}
+     * @param callback
      */
-    public abstract get onStart$(): Observable<Tween>;
+    public abstract onStop$(callback: Function): void;
 
     /**
-     * Observable which emits if the animation stops
+     * Callback to run on Animation finish
      *
-     * @return {Observable<Tween>}
+     * @param callback
      */
-    public abstract get onStop$(): Observable<Tween>;
-
-    /**
-     * Observable which emits after the animation finishes
-     *
-     * @return {Observable<Tween>}
-     */
-    public abstract get onFinish$(): Observable<Tween>;
-
-    /**
-     * Observable which emits the animation progress
-     *
-     * @return {Observable<AnimationProgress>}
-     */
-    public abstract get onUpdate$(): Observable<AnimationProgress> | undefined;
+    public abstract onFinish$(callback: Function): void;
 
     /**
      * Set the animation duration
@@ -45,6 +29,9 @@ export abstract class IAnimation {
      */
     public abstract get duration(): number | undefined;
 
+    /**
+     * Animation target
+     */
     public abstract get target(): Item | undefined;
 
     /**
@@ -79,17 +66,14 @@ export abstract class IAnimation {
  * @extends {IAnimation}
  */
 export default class Animation implements IAnimation {
-    // Observables
-    protected _onStart$: Subject<Tween> = new Subject<Tween>();
-    protected _onStop$: Subject<Tween> = new Subject<Tween>();
-    protected _onFinish$: Subject<Tween> = new Subject<Tween>();
-    protected _onUpdate$: Observable<AnimationProgress> | undefined;
-
     // Data
     protected _options: AnimationOptions = {};
     private _target: Item | undefined;
     private _from: AnimatableData | undefined;
     private _to: AnimatableData | undefined;
+
+    protected onFinishCallbacks = new Array<Function>();
+    protected onStopCallbacks = new Array<Function>();
 
     // Tween instance
     private _tween: Tween;
@@ -106,46 +90,6 @@ export default class Animation implements IAnimation {
         if (typeof animation !== "undefined") {
             this.initialize(animation);
         }
-    }
-
-    /**
-     * Observable which emits if the animation starts
-     *
-     * @return {Observable<Tween>}
-     */
-    public get onStart$(): Observable<Tween> {
-        return this._onStart$.asObservable();
-    }
-
-    /**
-     * Observable which emits if the animation stops
-     *
-     * @return {Observable<Tween>}
-     */
-    public get onStop$(): Observable<Tween> {
-        return this._onStop$.asObservable();
-    }
-
-    /**
-     * Observable which emits after the animation finishes
-     *
-     * @return {Observable<Tween>}
-     */
-    public get onFinish$(): Observable<Tween> {
-        return this._onFinish$.asObservable();
-    }
-
-    /**
-     * Observable which emits the animation progress
-     *
-     * @return {Observable<AnimationProgress>}
-     */
-    public get onUpdate$(): Observable<AnimationProgress> | undefined {
-        if (this._initialized) {
-            return this._onUpdate$;
-        }
-
-        return undefined;
     }
 
     /**
@@ -203,6 +147,9 @@ export default class Animation implements IAnimation {
         return false;
     }
 
+    /**
+     * @inheritDoc
+     */
     public get target(): Item | undefined {
         return this._target;
     }
@@ -222,12 +169,8 @@ export default class Animation implements IAnimation {
 
         this._tween = this.createTween(animation);
 
-        // @ts-ignore
-        this._onUpdate$ = fromEvent(this._tween, 'update');
-
         this._tween.then((): void => {
-            this._onFinish$.next(this._tween);
-            this._onFinish$.complete();
+            this.runOnFinish();
         });
 
         this._initialized = true;
@@ -243,11 +186,7 @@ export default class Animation implements IAnimation {
             throw new Error("Animation not initialized");
         }
 
-        this._onStart$.next(this._tween);
-
         this._tween.start();
-
-        this._onStart$.complete();
     }
 
     /**
@@ -258,9 +197,8 @@ export default class Animation implements IAnimation {
     public stop(goToEnd: boolean = true): void {
         // @ts-ignore
         if (typeof this._tween !== "undefined" && this._tween.running) {
-            this._onStop$.next(this._tween);
+
             this._tween.stop();
-            this._onStop$.complete();
 
             if (goToEnd && typeof this._to !== "undefined") {
                 if (typeof this._to['lastSegment.point'] !== "undefined") {
@@ -272,6 +210,22 @@ export default class Animation implements IAnimation {
                 (this._target as Item).set(this._to);
             }
         }
+
+        this.runOnStop();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public onFinish$(callback: Function): void {
+        this.onFinishCallbacks.push(callback);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public onStop$(callback: Function): void {
+        this.onStopCallbacks.push(callback);
     }
 
     /**
@@ -286,9 +240,11 @@ export default class Animation implements IAnimation {
             throw new Error('Animation is missing "from" and "to" data.');
         }
 
+        let tween;
+
         if (typeof animation.from === "undefined") {
             // @ts-ignore
-            return this._target.tweenTo(
+            tween = this._target.tweenTo(
                 this._to as object,
                 {
                     duration: this._options.duration,
@@ -298,7 +254,7 @@ export default class Animation implements IAnimation {
             );
         } else if (typeof animation.to === "undefined") {
             // @ts-ignore
-            return this._target.tweenFrom(
+            tween = this._target.tweenFrom(
                 this._from as object,
                 {
                     duration: this._options.duration,
@@ -308,7 +264,7 @@ export default class Animation implements IAnimation {
             );
         } else {
             // @ts-ignore
-            return this._target.tween(
+            tween = this._target.tween(
                 this._from as object,
                 this._to as object,
                 {
@@ -318,6 +274,8 @@ export default class Animation implements IAnimation {
                 }
             );
         }
+
+        return tween;
     }
 
     /**
@@ -365,38 +323,44 @@ export default class Animation implements IAnimation {
 
         return options;
     }
+
+    /**
+     * Run all added callbacks
+     */
+    protected runOnFinish(): void {
+        this.onFinishCallbacks.forEach(callback => callback());
+
+        this.onFinishCallbacks.length = 0;
+    }
+
+    /**
+     * Run all added callbacks
+     */
+    protected runOnStop(): void {
+        this.onStopCallbacks.forEach(callback => callback());
+
+        this.onStopCallbacks.length = 0;
+    }
 }
 
 /**
  * An AnimationGroup can hold 0-n Animations
  *
  * @extends Animation
- *
- * @member {Observable<Array<Tween>>} onStart
- * @member {Observable<Array<Tween>>} onStop
- * @member {Observable<Array<Tween>>} onFinish
- * @property {Observable<Array<Tween>>} test
  */
 export class AnimationGroup extends Animation {
-    // Observables
-    // @ts-ignore
-    protected _onStart$: Subject<Array<Tween>> = new Subject<Array<Tween>>();
-    // @ts-ignore
-    protected _onStop$: Subject<Array<Tween>> = new Subject<Array<Tween>>();
-    // @ts-ignore
-    protected _onFinish$: Subject<Array<Tween>> = new Subject<Array<Tween>>();
-    // @ts-ignore
-    protected _onUpdate$: Subject<AnimationProgress> = new Subject<AnimationProgress>();
-    private _onUpdateGroup$: Subject<AnimationProgress> = new Subject<AnimationProgress>();
-
-    // Child observables
-    private readonly _onStartChildren: Array<Observable<Tween>>;
-    private readonly _onStopChildren: Array<Observable<Tween>>;
-    private readonly _onFinishChildren: Array<Observable<Tween>>;
-    private readonly _onUpdateChildren: Array<Observable<AnimationProgress>>;
-
     // Data
     private _animations: Array<IAnimation>;
+
+    /**
+     * Finish function count from animations
+     */
+    private finCount: number = 0;
+
+    /**
+     * Stop function count from animations
+     */
+    private stopCount: number = 0;
 
     /**
      * Group Constructor
@@ -406,66 +370,12 @@ export class AnimationGroup extends Animation {
      */
     public constructor(...animations: Array<IAnimation>) {
         super();
-        this._onStartChildren = new Array<Observable<Tween>>();
-        this._onStopChildren = new Array<Observable<Tween>>();
-        this._onFinishChildren = new Array<Observable<Tween>>();
-        this._onUpdateChildren = new Array<Observable<AnimationProgress>>();
 
         if (animations.length > 0) {
             this._animations = animations;
-            this._animations.forEach(this.addObservables);
-            this.subscribeSubjects();
         } else {
             this._animations = new Array<IAnimation>();
         }
-    }
-
-    /**
-     * Observable which emits if the animation starts
-     *
-     * @return {Observable<Array<Tween>>}
-     */
-    // @ts-ignore
-    public get onStart$(): Observable<Array<Tween>> {
-        return this._onStart$.asObservable();
-    }
-
-    /**
-     * Observable which emits if the animation stops
-     *
-     * @return {Observable<Array<Tween>>}
-     */
-    // @ts-ignore
-    public get onStop$(): Observable<Array<Tween>> {
-        return this._onStop$.asObservable();
-    }
-
-    /**
-     * Observable which emits after the animation finishes
-     *
-     * @return {Observable<Array<Tween>>}
-     */
-    // @ts-ignore
-    public get onFinish$(): Observable<Array<Tween>> {
-        return this._onFinish$.asObservable();
-    }
-
-    /**
-     * Observable which emits the animation progress
-     *
-     * @return {Observable<AnimationProgress>}
-     */
-    public get onUpdate$(): Observable<AnimationProgress> {
-        return this._onUpdate$.asObservable();
-    }
-
-    /**
-     * Calculates the average progress from all running animations
-     *
-     * @return {Observable<AnimationProgress>}
-     */
-    public get onUpdateGroup$(): Observable<AnimationProgress> {
-        return this._onUpdateGroup$.asObservable();
     }
 
     /**
@@ -526,11 +436,17 @@ export class AnimationGroup extends Animation {
             if (typeof this._options.easing !== "undefined") {
                 // @ts-ignore
                 animation.easing = typeof this._options.easing === "function" ? this._options.easing : Tween.easings[this._options.easing];
-
             }
 
+            animation.onFinish$(() => {
+                this.onFinishIntern();
+            });
+
+            animation.onStop$(() => {
+                this.onStopIntern();
+            });
+
             this._animations.push(animation);
-            this.addObservables(animation);
         });
     }
 
@@ -539,7 +455,10 @@ export class AnimationGroup extends Animation {
      */
     public reset(): void {
         this.resetChildren();
-        this.resetSubjects();
+        this.finCount = 0;
+        this.stopCount = 0;
+        this.onFinishCallbacks.length = 0;
+        this.onStopCallbacks.length = 0;
     }
 
     /**
@@ -547,29 +466,12 @@ export class AnimationGroup extends Animation {
      */
     private resetChildren(): void {
         this._animations.length = 0;
-
-        this._onStartChildren.length = 0;
-        this._onStopChildren.length = 0;
-        this._onUpdateChildren.length = 0;
-        this._onFinishChildren.length = 0;
-    }
-
-    /**
-     * @see {reset}
-     */
-    private resetSubjects(): void {
-        this._onStart$ = new Subject<Array<Tween>>();
-        this._onStop$ = new Subject<Array<Tween>>();
-        this._onFinish$ = new Subject<Array<Tween>>();
-        this._onUpdate$ = new Subject<AnimationProgress>();
-        this._onUpdateGroup$ = new Subject<AnimationProgress>();
     }
 
     /**
      * Start all animations
      */
     public start(): void {
-        this.subscribeSubjects();
 
         this._animations.forEach((animation: IAnimation): void => {
             animation.start();
@@ -599,37 +501,38 @@ export class AnimationGroup extends Animation {
     }
 
     /**
-     * Pushes the child's observables to the group
-     *
-     * @param {IAnimation} animation
+     * @inheritDoc
      */
-    private addObservables(animation: IAnimation): void {
-        this._onStartChildren.push(animation.onStart$);
-        this._onStopChildren.push(animation.onStop$);
-        this._onFinishChildren.push(animation.onFinish$);
-        this._onUpdateChildren.push(animation.onUpdate$ as Observable<AnimationProgress>);
+    protected runOnStop(): void {
+        super.runOnStop();
+        this.stopCount = 0;
     }
 
     /**
-     * Subscribes the public subjects to the added child events
+     * @inheritDoc
      */
-    private subscribeSubjects(): void {
-        // forkJoin = Emit after every Observable emits one
-        forkJoin(this._onStartChildren).subscribe(this._onStart$);
+    protected runOnFinish(): void {
+        super.runOnFinish();
+        this.finCount = 0;
+    }
 
-        forkJoin(this._onStopChildren).subscribe(this._onStop$);
+    /**
+     * Call runOnFinish if all animations finished
+     */
+    private onFinishIntern(): void {
+        this.finCount++;
+        if (this.finCount === this.length) {
+            this.runOnFinish();
+        }
+    }
 
-        forkJoin(this._onFinishChildren).subscribe(this._onFinish$);
-
-        from(this._onUpdateChildren).pipe(mergeAll()).subscribe(this._onUpdate$);
-
-        combineLatest(this._onUpdateChildren).pipe(
-            map((updates: Array<AnimationProgress>): AnimationProgress => {
-                return {
-                    progress: updates.reduce((progress, next): number => progress + next.progress, 0) / this._onUpdateChildren.length,
-                    factor: updates.reduce((factor, next): number => factor + next.factor, 0) / this._onUpdateChildren.length,
-                };
-            })
-        ).subscribe(this._onUpdateGroup$);
+    /**
+     * Call runOnStop if all animations stopped
+     */
+    private onStopIntern(): void {
+        this.stopCount++;
+        if (this.stopCount === this.length) {
+            this.runOnStop();
+        }
     }
 }
