@@ -260,6 +260,7 @@ export default class Menu implements MenuData {
         this.setupCanvas();
         this.setupScope();
         this.setupObservables();
+        this.resize();
 
         if (this._settings[SettingsGroup.MAIN].enableAutoResize) {
             window.addEventListener('resize', () => {
