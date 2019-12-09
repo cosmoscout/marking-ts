@@ -1,6 +1,6 @@
 import {Color, CompoundPath, Group, Item, Path, Point, PointText, Rectangle} from 'paper';
 import {Observable, Subject, Subscription} from "rxjs";
-import {distinctUntilChanged, map} from "rxjs/operators";
+import {distinctUntilChanged, filter, map} from "rxjs/operators";
 import Angle from '../../utlis/angle';
 import Arc from "../../utlis/arc";
 import Settings from "../settings";
@@ -242,6 +242,8 @@ export default class MenuItem extends Base implements MenuIdentifier {
         this.collectArcAngles();
         this.createArcs();
 
+        this.addSubscriptions();
+
         this.itemReady();
     }
 
@@ -424,6 +426,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * Called after a state change occurred
      */
     protected stateChanged(): void {
+        this.hoveredChild = undefined;
         this.isInBackNavigationArc = false;
 
         this.geometryGroup.position = CENTER;
@@ -443,11 +446,9 @@ export default class MenuItem extends Base implements MenuIdentifier {
         this.selectionRadius.visible = false;
 
         if (this.state === ItemState.ACTIVE || this.state === ItemState.ACTIVE_SELECTION) {
-            this.addSubscriptions();
             this.icon.opacity = MenuItem.ICON_BG_OPACITY;
             this.updateText(this.textContent);
         } else {
-            this.subscription && this.subscription.unsubscribe();
             (this.arcGroup.children as Item[]).forEach((arc: Item): void => {
                 arc.opacity = 0;
             });
@@ -531,10 +532,15 @@ export default class MenuItem extends Base implements MenuIdentifier {
      */
     protected addSubscriptions(): void {
         this.subscription = new Subscription();
-        this.subscription.add(this.inputAngle$.subscribe(this.selectionLogic.bind(this)));
-        this.subscription.add(this.menu.click$.subscribe(this.clickLogic.bind(this)));
-        this.subscription.add(this.menu.trace$.onDecisionPoint$.subscribe(this.traceLogic.bind(this)));
-        this.subscription.add(this.menu.dragging$.subscribe(this.dragLogic.bind(this)));
+
+        const stateActive = () => {
+            return this.state === ItemState.ACTIVE || this.state === ItemState.ACTIVE_SELECTION
+        };
+
+        this.subscription.add(this.inputAngle$.pipe(filter(stateActive)).subscribe(this.selectionLogic.bind(this)));
+        this.subscription.add(this.menu.click$.pipe(filter(stateActive)).subscribe(this.clickLogic.bind(this)));
+        this.subscription.add(this.menu.trace$.onDecisionPoint$.pipe(filter(stateActive)).subscribe(this.traceLogic.bind(this)));
+        this.subscription.add(this.menu.dragging$.pipe(filter(stateActive)).subscribe(this.dragLogic.bind(this)));
     }
 
     /**
