@@ -124,12 +124,21 @@ export interface AnimationProgress {
  * Settings structure
  */
 export interface SettingsDefinition {
+    /**
+     * minDistance: Min distance in px between parent to child
+     * minTraceDistance: Min length of a trace in px
+     * animationDuration: Animation duration in ms
+     * enableMaxClickRadius: True to disable item selection on the whole display
+     * enableAutoResize: Flag to automatically resize the canvas to screen size
+     * inputTimeout: Time in ms between MouseDown and MouseUp to generate a click event
+     */
     readonly [SettingsGroup.MAIN]: {
         minDistance: number;
         minTraceDistance: number;
         animationDuration: number;
         enableMaxClickRadius: boolean;
         enableAutoResize: boolean;
+        inputTimeout: number;
     };
     readonly [SettingsGroup.GEOMETRY]: {
         size: number;

@@ -16,6 +16,7 @@ export default class Settings implements SettingsDefinition {
             animationDuration: 250,
             enableMaxClickRadius: true,
             enableAutoResize: true,
+            inputTimeout: 200,
         },
         [SettingsGroup.GEOMETRY]: {
             size: 50,

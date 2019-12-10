@@ -14,15 +14,6 @@ import ColorFactory from "../../utlis/color-factory";
  * Main menu holding all items and input observables
  */
 export default class Menu implements MenuData {
-    /**
-     * Time between MouseDown and MouseUp to generate a click event
-     *
-     * @type {number}
-     * @constant
-     * @readonly
-     */
-    private static readonly INPUT_TIMEOUT: number = 200;
-
     // Observables
     /**
      * Subject to manually trigger a input activation
@@ -155,7 +146,6 @@ export default class Menu implements MenuData {
         this._fadeAnimation = new Animation();
         this._trace = new Trace(this._settings);
 
-
         this.inputActivation$ = new Subject<Input>();
         this.inputDeactivation$ = new Subject<Input>();
         this.inputPosition$ = new Subject<Point>();
@@ -271,9 +261,7 @@ export default class Menu implements MenuData {
         if (typeof window.PointerEvent === "undefined") {
             this.setupObservableDataFromInputEvents();
         } else {
-            this.setupObservableDataFromInputEvents();
-            // This is definitely a TODO
-            //this.setupObservableDataFromPointerEvents();
+            this.setupObservableDataFromPointerEvents();
         }
 
         this._traceVisGroup = new Group();
@@ -406,10 +394,9 @@ export default class Menu implements MenuData {
 
         this.inputActivation$.pipe(
             mergeMap((): Observable<ClickState> => {
-                // @ts-ignore
                 return this.inputDeactivation$.pipe(
                     // Holding mouse button too long wont trigger a click event | TODO
-                    timeoutWith(Menu.INPUT_TIMEOUT, new Observable()),
+                    timeoutWith(this._settings[SettingsGroup.MAIN].inputTimeout, new Observable()),
                     map((e: Input): ClickState => {
                         if (e.button === 0) {
                             return ClickState.LEFT_CLICK;
@@ -441,7 +428,6 @@ export default class Menu implements MenuData {
     /**
      * Sets up observables from PointerEvent
      */
-    // @ts-ignore for now
     private setupObservableDataFromPointerEvents(): void {
         const inputMove = this.createObserver('pointermove');
         const inputUp = merge(this.createObserver('pointerup'), this.createObserver('pointercancel'));
@@ -481,11 +467,9 @@ export default class Menu implements MenuData {
         const inputDown = merge(touchStart, mouseDown);
         const inputLeave = merge(touchCancel, mouseLeave);
 
-
         inputDown.subscribe(this.inputActivation$);
         inputUp.subscribe(this.inputDeactivation$);
         inputLeave.subscribe(this.inputDeactivation$);
-
 
         inputMove.pipe(
             map((e: MouseEvent): Point => {
