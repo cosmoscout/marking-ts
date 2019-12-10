@@ -1,5 +1,5 @@
 import {fromEvent, merge, Observable, Subject} from 'rxjs';
-import {Group, PaperScope, Path, Point, Project} from 'paper';
+import {Group, PaperScope, Path, Point, Project, Size} from 'paper';
 import MenuItem from "./menu-item";
 import Settings from "../settings";
 import {ClickState, DragState, ItemState, SettingsGroup} from "../enums";
@@ -10,26 +10,10 @@ import {ZERO_POINT} from "../constants";
 import {DragDefinition, Input, MenuData, MenuEventDefinition, SettingsDefinition} from "../interfaces";
 import ColorFactory from "../../utlis/color-factory";
 
-declare global {
-    interface Window {
-        PointerEvent: typeof PointerEvent;
-    }
-}
-
 /**
  * Main menu holding all items and input observables
  */
 export default class Menu implements MenuData {
-    /**
-     * Time between MouseDown and MouseUp to generate a click event
-     *
-     * @type {number}
-     * @constant
-     * @readonly
-     */
-    private static readonly INPUT_TIMEOUT: number = 200;
-
-
     // Observables
     /**
      * Subject to manually trigger a input activation
@@ -145,7 +129,7 @@ export default class Menu implements MenuData {
     /**
      * Flag if Menu is in marking mode
      *
-     * @type {boolean} [false]
+     * @type {boolean} false
      */
     private _markingMode: boolean = false;
 
@@ -153,7 +137,7 @@ export default class Menu implements MenuData {
      *
      * @param {string} rootSelector
      * @see {_rootSelector}
-     * @param {SettingsDefinition | Record<string, any>} [settings={}] Object gets merged with default _settings
+     * @param {SettingsDefinition | Record<string, any>} settings={} Object gets merged with default _settings
      * @constructor
      */
     public constructor(rootSelector: string, settings: Record<string, any> | SettingsDefinition = {}) {
@@ -161,7 +145,6 @@ export default class Menu implements MenuData {
         this._settings = new Settings(settings);
         this._fadeAnimation = new Animation();
         this._trace = new Trace(this._settings);
-
 
         this.inputActivation$ = new Subject<Input>();
         this.inputDeactivation$ = new Subject<Input>();
@@ -267,11 +250,17 @@ export default class Menu implements MenuData {
         this.setupCanvas();
         this.setupScope();
         this.setupObservables();
+        this.resize();
+
+        if (this._settings[SettingsGroup.MAIN].enableAutoResize) {
+            window.addEventListener('resize', () => {
+                this.resize();
+            });
+        }
 
         if (typeof window.PointerEvent === "undefined") {
             this.setupObservableDataFromInputEvents();
         } else {
-            // This is definitely a TODO
             this.setupObservableDataFromPointerEvents();
         }
 
@@ -328,6 +317,17 @@ export default class Menu implements MenuData {
     }
 
     /**
+     * Set the canvas size to window.innerWidth / height
+     */
+    public resize(): void {
+        if (!window) {
+            return;
+        }
+
+        this._scope.project.view.viewSize = new Size(window.innerWidth, window.innerHeight);
+    }
+
+    /**
      * Sets up the paper.js canvas
      * Disables the context menu and resizes it to full screen
      *
@@ -344,6 +344,7 @@ export default class Menu implements MenuData {
         this._canvas.setAttribute('data-paper-resize', 'true');
         this._canvas.setAttribute('tabindex', '1');
         (this._canvas.style as any)['touch-action'] = 'none';
+        (this._canvas.style as any)['outline'] = 'none';
 
         this._root.appendChild(this._canvas);
     }
@@ -393,10 +394,9 @@ export default class Menu implements MenuData {
 
         this.inputActivation$.pipe(
             mergeMap((): Observable<ClickState> => {
-                // @ts-ignore
                 return this.inputDeactivation$.pipe(
                     // Holding mouse button too long wont trigger a click event | TODO
-                    timeoutWith(Menu.INPUT_TIMEOUT, new Observable()),
+                    timeoutWith(this._settings[SettingsGroup.MAIN].inputTimeout, new Observable()),
                     map((e: Input): ClickState => {
                         if (e.button === 0) {
                             return ClickState.LEFT_CLICK;
@@ -467,11 +467,9 @@ export default class Menu implements MenuData {
         const inputDown = merge(touchStart, mouseDown);
         const inputLeave = merge(touchCancel, mouseLeave);
 
-
         inputDown.subscribe(this.inputActivation$);
         inputUp.subscribe(this.inputDeactivation$);
         inputLeave.subscribe(this.inputDeactivation$);
-
 
         inputMove.pipe(
             map((e: MouseEvent): Point => {

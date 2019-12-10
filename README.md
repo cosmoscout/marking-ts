@@ -1,21 +1,21 @@
-# Marking-TS
+# tasty.js
 
-A Marking-Menu Framework in TypeScript
+A Pie- and Marking-Menu Framework in TypeScript.
 
 ## Setup
-Add `1.marking-ts.js` and `marking-ts.js` to your HTML File.  
+Add `tasty.js` to your HTML File.  
 You'll need to include paper.js and lodash separately.
 ````
 <script src="https://unpkg.com/lodash"></script>
 <script src="https://unpkg.com/paper"></script>
 ````
 
-The framework is accessible through the global `MarkingTS` object.
+The framework is accessible through the global `tasty` object.
 
 Example Menu:
 ```javascript
 window.onload = () => {
-    const menu = new MarkingTS.Menu('body' /* The element to place the menu into */, {
+    const menu = new tasty.menu('body' /* The element to place the menu into */, {
         // Configuration object
         // These are the defaults
         main: {
@@ -111,7 +111,7 @@ window.onload = () => {
     };
 
     menu.init();
-    menu.setStructure(MarkingTS.MenuParser.parse(struct));
+    menu.setStructure(tasty.parser.parse(struct));
 
     menu.selection$.subscribe(s => {
         if (s.type === 'itemSelection') {
@@ -183,14 +183,13 @@ There are six different event types:
 * navigationBackHover: The input device hovers over the back sector
 * itemHover: The input device hovers over an item with children
 * itemSelectionHover: The input device hovers over an item with no children
+* sliderValueChanging: Ribbonslider value is changing
+* sliderValueFinal: Ribbonslider value is finalized
 
 Each event object contains three readonly members:  
 * `type`: one of the six described types
 * `source`: An object containing the currently active `itemId` and the item's `angle`
 * `target`: An object containing the target's `itemId` and `angle`
-
-
-
 
 ## Ribbonslider
 Definition:
@@ -218,3 +217,36 @@ The slider configurations is contained in its `data` field.
 * `initial`: Initial slider value | Cannot be outside the range of min/max
 * `stepSize`: Slider step size between values
 * `stepDist`: Distance in px between two steps
+
+## Checkbox
+Definition:
+```
+{
+    id: 'checkbox',
+    text: 'Checkbox',
+    icon: 'check',
+    direction: 0, 
+    type: 'checkbox',
+    data: {
+        selected: false
+    }
+}
+```
+
+The `itemSelection` event will contain a `data` field with selected set to true/false.
+
+## Radio-Group / Drop-Down
+Definition:
+```
+{
+    id: 'radio-group',
+    text: 'Radio-Group',
+    icon: 'list',
+    direction: 0, 
+    type: 'radio-group',
+    // Every added child will be a checkbox
+    children: [],
+}
+```
+
+Radio-Groups will set all added children to be of type `checkbox`. Only on item can be active at a given time in a radio-group.

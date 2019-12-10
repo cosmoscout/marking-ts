@@ -6,9 +6,9 @@ module.exports = {
     entry: path.resolve(__dirname, 'src'),
 
     output: {
-        filename: 'marking-ts.js',
+        filename: 'tasty.js',
         path: path.resolve(__dirname, 'dist'),
-        library: 'MarkingTS',
+        library: 'tasty',
         libraryTarget: 'umd',
         umdNamedDefine: true,
         globalObject: 'this'
@@ -32,6 +32,7 @@ module.exports = {
         ]
     },
 
+/*
     optimization: {
         splitChunks: {
             cacheGroups: {
@@ -47,11 +48,12 @@ module.exports = {
             }
         }
     },
+*/
 
     plugins: [
         new ForkTsCheckerWebpackPlugin(),
         new HTMLWebpackPlugin({
-            title: 'Marking-TS',
+            title: 'tasty.js',
             template: path.resolve(__dirname, 'public/index.html')
         })
     ],

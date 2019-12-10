@@ -1,4 +1,5 @@
-import merge from 'lodash/merge';
+import mergeWith from 'lodash/mergeWith';
+import isArray from 'lodash/isArray';
 import {SettingsGroup} from "./enums";
 import {SettingsDefinition} from "./interfaces";
 
@@ -14,9 +15,12 @@ export default class Settings implements SettingsDefinition {
             minTraceDistance: 175,
             animationDuration: 250,
             enableMaxClickRadius: true,
+            enableAutoResize: true,
+            inputTimeout: 200,
         },
         [SettingsGroup.GEOMETRY]: {
             size: 50,
+            sizeDeadZone: 25,
             color: '#575859',
             selectionColor: '#577a85',
             stroke: {
@@ -24,12 +28,28 @@ export default class Settings implements SettingsDefinition {
                 color: 'rgba(62, 62, 64, 1.0)',
                 width: 2,
             },
+            useActionShape: true,
             text: {
                 color: '#fff',
+                selectionColor: '#fff',
             },
             icon: {
                 color: '#fff',
+                selectionColor: '#fff',
             }
+        },
+        [SettingsGroup.CHECKBOX]: {
+            selectionColor: '#529b1e',
+            selectionColorSelected: '#396e14',
+            cornerRadius: 25,
+        },
+        [SettingsGroup.RIBBONSLIDER]: {
+            gradientColor: 'rgba(62, 62, 64, 1.0)',
+            gradientColorSides: 'rgba(32, 32, 32, 0)',
+            maskStart: 0.1,
+            maskLengthMultiplier: 0.6,
+            gradientLength: 150,
+            ribbonHeight: 60,
         },
         [SettingsGroup.CONNECTOR]: {
             enabled: true,
@@ -71,7 +91,13 @@ export default class Settings implements SettingsDefinition {
     private readonly _settings: SettingsDefinition;
 
     public constructor(settings: Record<string, any> | SettingsDefinition = {}) {
-        this._settings = merge(this._defaultSettings, settings);
+        const mergeCopyArrays = (objValue: any, srcValue: any) => {
+            if (isArray(objValue)) {
+                return srcValue;
+            }
+        };
+
+        this._settings = mergeWith(this._defaultSettings, settings, mergeCopyArrays);
     }
 
     public get defaultSettings(): SettingsDefinition {
@@ -100,6 +126,14 @@ export default class Settings implements SettingsDefinition {
 
     public get [SettingsGroup.RADII](): SettingsDefinition[SettingsGroup.RADII] {
         return this._settings[SettingsGroup.RADII];
+    }
+
+    public get [SettingsGroup.CHECKBOX](): SettingsDefinition[SettingsGroup.CHECKBOX] {
+        return this._settings[SettingsGroup.CHECKBOX];
+    }
+
+    public get [SettingsGroup.RIBBONSLIDER](): SettingsDefinition[SettingsGroup.RIBBONSLIDER] {
+        return this._settings[SettingsGroup.RIBBONSLIDER];
     }
 
     public get projectStyle(): Record<string, string | number> {
