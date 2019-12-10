@@ -13,7 +13,7 @@ import Animation, {AnimationGroup} from "../../utlis/animation";
 import {DEFAULT_SCALE, REFERENCE_POINT, ZERO_POINT as CENTER} from "../constants";
 import {ArcDefinition, DragDefinition, MenuData, MenuEventDefinition, MenuIdentifier} from "../interfaces";
 import MenuEvent from "./menu-event";
-import Base from "./Base";
+import Base from "./base";
 
 /**
  * Class representing a single Menu Entry
