@@ -52,10 +52,10 @@ module.exports = {
 
     plugins: [
         new ForkTsCheckerWebpackPlugin(),
-        new HTMLWebpackPlugin({
+/*        new HTMLWebpackPlugin({
             title: 'tasty.js',
             template: path.resolve(__dirname, 'public/index.html')
-        })
+        })*/
     ],
     externals: [
         {
