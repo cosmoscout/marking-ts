@@ -1,21 +1,21 @@
-# Marking-TS
+# tasty.js
 
-A Marking-Menu Framework in TypeScript
+A Pie- and Marking-Menu Framework in TypeScript.
 
 ## Setup
-Add `1.marking-ts.js` and `marking-ts.js` to your HTML File.  
+Add `tasty.js` to your HTML File.  
 You'll need to include paper.js and lodash separately.
 ````
 <script src="https://unpkg.com/lodash"></script>
 <script src="https://unpkg.com/paper"></script>
 ````
 
-The framework is accessible through the global `MarkingTS` object.
+The framework is accessible through the global `tasty` object.
 
 Example Menu:
 ```javascript
 window.onload = () => {
-    const menu = new MarkingTS.Menu('body' /* The element to place the menu into */, {
+    const menu = new tasty.menu('body' /* The element to place the menu into */, {
         // Configuration object
         // These are the defaults
         main: {
@@ -111,7 +111,7 @@ window.onload = () => {
     };
 
     menu.init();
-    menu.setStructure(MarkingTS.MenuParser.parse(struct));
+    menu.setStructure(tasty.parser.parse(struct));
 
     menu.selection$.subscribe(s => {
         if (s.type === 'itemSelection') {

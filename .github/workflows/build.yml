@@ -21,7 +21,7 @@ jobs:
       - uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/marking-ts.js
-          asset_name: marking-ts.js
+          file: dist/tasty.js
+          asset_name: tasty.js
           tag: ${{ github.ref }}
           overwrite: true
