@@ -17,6 +17,7 @@ export default class Settings implements SettingsDefinition {
             enableMaxClickRadius: true,
             enableAutoResize: true,
             inputTimeout: 200,
+            canvasId: 'tasty',
         },
         [SettingsGroup.GEOMETRY]: {
             size: 50,

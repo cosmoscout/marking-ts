@@ -139,6 +139,7 @@ export interface SettingsDefinition {
         enableMaxClickRadius: boolean;
         enableAutoResize: boolean;
         inputTimeout: number;
+        canvasId: string;
     };
     readonly [SettingsGroup.GEOMETRY]: {
         size: number;
