@@ -10,7 +10,7 @@ export default class MenuParser {
     /**
      * List of already used menu item ids
      */
-    private static itemIds: Map<string, MenuItem> = new Map<string, MenuItem>();
+    private itemIds: Map<string, MenuItem> = new Map<string, MenuItem>();
 
     /**
      * Parses a JSON Structure to Menu Items
@@ -19,11 +19,10 @@ export default class MenuParser {
      * @param {MenuItem | null} parent
      * @return {MenuItem}
      */
-    public static parse(structure: MenuItemDefinition, parent: MenuItem | null = null): MenuItem {
-
+    public parse(structure: MenuItemDefinition, parent: MenuItem | null = null): MenuItem {
         let item: MenuItem;
 
-        MenuParser.checkIds(structure.id);
+        this.checkIds(structure.id);
 
         if (parent === null) {
             item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon, true);
@@ -61,10 +60,10 @@ export default class MenuParser {
             MenuParser.checkAngles(item);
         }
 
-        MenuParser.itemIds.set(structure.id, item);
+        this.itemIds.set(structure.id, item);
 
         structure.children && structure.children.forEach((child): void => {
-            MenuParser.parse(child, item);
+            this.parse(child, item);
         });
 
         if (typeof structure.data !== "undefined") {
@@ -80,9 +79,9 @@ export default class MenuParser {
      *
      * @param {string} itemId
      */
-    private static checkIds(itemId: string): void {
-        if (MenuParser.itemIds.has(itemId)) {
-            const item = MenuParser.itemIds.get(itemId) as MenuItem;
+    private checkIds(itemId: string): void {
+        if (this.itemIds.has(itemId)) {
+            const item = this.itemIds.get(itemId) as MenuItem;
             console.warn(`Menu Item ID '${itemId}' already in use by Menu Item '${item.itemId}' with Parent '${(item.parent as MenuItem).itemId}'.`);
         }
     }
