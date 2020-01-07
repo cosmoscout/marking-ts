@@ -361,6 +361,7 @@ export default class Menu implements MenuData {
         this._canvas.setAttribute('tabindex', '1');
         (this._canvas.style as any)['touch-action'] = 'none';
         (this._canvas.style as any)['outline'] = 'none';
+        this._canvas.id = this._settings[SettingsGroup.MAIN].canvasId;
 
         this._root.appendChild(this._canvas);
     }
