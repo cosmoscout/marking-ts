@@ -149,7 +149,6 @@ export default class Menu implements MenuData {
         this.inputActivation$ = new Subject<Input>();
         this.inputDeactivation$ = new Subject<Input>();
         this.inputPosition$ = new Subject<Point>();
-
         this._dragging$ = new Subject<DragDefinition>();
         this._click$ = new Subject<ClickState>();
     }
@@ -270,10 +269,11 @@ export default class Menu implements MenuData {
     /**
      * Displays the menu on the last input position
      *
+     * @param {Point} position Optional menu display position in px
      * @throws {Error} If menu hast not been initialized
      * @see {init}
      */
-    public display(): void {
+    public display(position:Point = null): void {
         if (this._rootItem === undefined) {
             throw new Error(`Menu not initialized.`);
         }
@@ -287,7 +287,23 @@ export default class Menu implements MenuData {
             this._fadeAnimation.start();
             this._rootItem.state = ItemState.ACTIVE;
             this._rootItem.redraw();
-            this._rootItem.position = this.inputPosition;
+            if (position === null) {
+                this._rootItem.position = this.inputPosition;
+            } else {
+                this._rootItem.position = position;
+            }
+        }
+    }
+
+    public hide(): void {
+        if (this._rootItem === undefined) {
+            throw new Error(`Menu not initialized.`);
+        }
+
+        if (this._rootItem.state !== ItemState.HIDDEN) {
+            this._rootItem.visible = false;
+            this._rootItem.state = ItemState.HIDDEN;
+            this._rootItem.redraw();
         }
     }
 
