@@ -39,6 +39,7 @@ export default class MenuParser {
                         item = new Crankslider(structure.id, structure.direction, structure.text, structure.icon);
                         break;
 
+                    case 'slider':
                     case 'ribbonslider':
                         item = new Ribbonslider(structure.id, structure.direction, structure.text, structure.icon);
                         break;
@@ -47,6 +48,7 @@ export default class MenuParser {
                         item = new Checkbox(structure.id, structure.direction, structure.text, structure.icon);
                         break;
 
+                    case 'radiogroup':
                     case 'radio-group':
                         item = new RadioGroup(structure.id, structure.direction, structure.text, structure.icon);
                         break;
