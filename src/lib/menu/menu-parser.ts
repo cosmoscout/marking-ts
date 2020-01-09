@@ -10,7 +10,7 @@ export default class MenuParser {
     /**
      * List of already used menu item ids
      */
-    private itemIds: Map<string, MenuItem> = new Map<string, MenuItem>();
+    private _itemIds: Map<string, MenuItem> = new Map<string, MenuItem>();
 
     /**
      * Parses a JSON Structure to Menu Items
@@ -39,6 +39,7 @@ export default class MenuParser {
                         item = new Crankslider(structure.id, structure.direction, structure.text, structure.icon);
                         break;
 
+                    case 'slider':
                     case 'ribbonslider':
                         item = new Ribbonslider(structure.id, structure.direction, structure.text, structure.icon);
                         break;
@@ -47,6 +48,7 @@ export default class MenuParser {
                         item = new Checkbox(structure.id, structure.direction, structure.text, structure.icon);
                         break;
 
+                    case 'radiogroup':
                     case 'radio-group':
                         item = new RadioGroup(structure.id, structure.direction, structure.text, structure.icon);
                         break;
@@ -60,7 +62,7 @@ export default class MenuParser {
             MenuParser.checkAngles(item);
         }
 
-        this.itemIds.set(structure.id, item);
+        this._itemIds.set(structure.id, item);
 
         structure.children && structure.children.forEach((child): void => {
             this.parse(child, item);
@@ -74,14 +76,21 @@ export default class MenuParser {
     }
 
     /**
+     * Parsed menu structure accessible through the item id
+     */
+    public get map(): Map<string, MenuItem> {
+        return this._itemIds;
+    }
+
+    /**
      * Checks if an item id is already in use by another item.
      * Writes a warning to the console
      *
      * @param {string} itemId
      */
     private checkIds(itemId: string): void {
-        if (this.itemIds.has(itemId)) {
-            const item = this.itemIds.get(itemId) as MenuItem;
+        if (this._itemIds.has(itemId)) {
+            const item = this._itemIds.get(itemId) as MenuItem;
             console.warn(`Menu Item ID '${itemId}' already in use by Menu Item '${item.itemId}' with Parent '${(item.parent as MenuItem).itemId}'.`);
         }
     }

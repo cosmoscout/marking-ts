@@ -4,7 +4,12 @@ import ColorFactory from "../../utlis/color-factory";
 import {Path, Rectangle, Size} from "paper";
 import {ZERO_POINT as CENTER} from "../constants";
 
+/**
+ * A Checkbox is either selected or not
+ */
 export default class Checkbox extends MenuItem {
+    public readonly TYPE = 'checkbox';
+
     /**
      * Selection Flag
      */
@@ -21,12 +26,25 @@ export default class Checkbox extends MenuItem {
         }
     }
 
+    /**
+     * Set the checkbox state to deselected
+     */
     public deselect(): void {
         this.itemSelected = false;
     }
 
+    /**
+     * Set the checkbox state to selected
+     */
     public select(): void {
         this.itemSelected = true;
+    }
+
+    /**
+     * True if checkbox is selected
+     */
+    public isSelected(): boolean {
+        return this.itemSelected === true;
     }
 
     /**
