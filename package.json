@@ -1,6 +1,6 @@
 {
   "name": "tasty.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Pie- and Marking-Menu Framework written in TypeScript.",
   "scripts": {
     "type-check": "tsc --noEmit",
