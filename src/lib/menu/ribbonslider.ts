@@ -156,7 +156,7 @@ export default class Ribbonslider extends MenuItem {
      * @param value number Slider value
      * @see {throttledTextUpdate}
      */
-    private set value(value: number) {
+    public set value(value: number) {
         if (this._value === value) {
             return;
         }
@@ -164,6 +164,15 @@ export default class Ribbonslider extends MenuItem {
         this._value = value;
 
         this.throttledTextUpdate('' + value);
+    }
+
+    /**
+     * Accessor
+     *
+     * @see {_value}
+     */
+    public get value(): number {
+        return this._value;
     }
 
     /**
@@ -229,15 +238,6 @@ export default class Ribbonslider extends MenuItem {
         }
 
         return this._ribbonMaskGroup;
-    }
-
-    /**
-     * Accessor
-     *
-     * @see {_value}
-     */
-    private get value(): number {
-        return this._value;
     }
 
     /**
