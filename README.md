@@ -111,7 +111,8 @@ window.onload = () => {
     };
 
     menu.init();
-    menu.setStructure(tasty.parser.parse(struct));
+    const parser = new tasty.parser();
+    menu.setStructure(parser.parse(structure));
 
     menu.selection$.subscribe(s => {
         if (s.type === 'itemSelection') {

@@ -1,15 +1,4 @@
 import MenuItem from "./menu-item";
-import {
-    Color,
-    Gradient,
-    Group,
-    Item,
-    MouseEvent as PaperMouseEvent,
-    Path,
-    Point,
-    PointText,
-    SymbolDefinition
-} from 'paper';
 import {ZERO_POINT as CENTER, ZERO_POINT} from "../constants";
 import {ClickState, DragState, ItemState, MenuItemEventType, SettingsGroup} from "../enums";
 import {ArcDefinition, DragDefinition, SliderDefinition} from "../interfaces";
@@ -21,34 +10,36 @@ import Arc from "../../utlis/arc";
 import {precision, roundNumber} from "../../utlis/numbers";
 
 export default class Ribbonslider extends MenuItem {
+    public readonly TYPE = 'ribbonslider';
+
     /**
      * Group holding
      * - Ribbon
      * - Texts
      * - GrabDots
      */
-    private _ribbonGroup: Group | undefined;
+    private _ribbonGroup: paper.Group | undefined;
 
     /**
      * The main ribbon
      */
-    private _ribbon: Path.Rectangle | undefined;
+    private _ribbon: paper.Path.Rectangle | undefined;
 
     /**
      * Gradient over indicator
      */
-    private _gradient: Path.Rectangle | undefined;
+    private _gradient: paper.Path.Rectangle | undefined;
 
     /**
      * 2x3 Grab dots
      * Use as grabDot.place(Position)
      */
-    private _grabDot: SymbolDefinition | undefined;
+    private _grabDot: paper.SymbolDefinition | undefined;
 
     /**
      * Group holding the fade out mask and ribbon group
      */
-    private _ribbonMaskGroup: Group | undefined;
+    private _ribbonMaskGroup: paper.Group | undefined;
 
     /**
      * The slide configuration
@@ -63,7 +54,7 @@ export default class Ribbonslider extends MenuItem {
     /**
      * Previous input position while dragging
      */
-    private prevDragPosition: Point | undefined;
+    private prevDragPosition: paper.Point | undefined;
 
     /**
      * Flag if currently dragging
@@ -73,7 +64,7 @@ export default class Ribbonslider extends MenuItem {
     /**
      * Bar indicating item is a slider while in child state
      */
-    private childIndicator: Path | undefined;
+    private childIndicator: paper.Path | undefined;
 
     /**
      * Flag is input is over "done" arc
@@ -156,7 +147,7 @@ export default class Ribbonslider extends MenuItem {
      * @param value number Slider value
      * @see {throttledTextUpdate}
      */
-    private set value(value: number) {
+    public set value(value: number) {
         if (this._value === value) {
             return;
         }
@@ -169,9 +160,18 @@ export default class Ribbonslider extends MenuItem {
     /**
      * Accessor
      *
+     * @see {_value}
+     */
+    public get value(): number {
+        return this._value;
+    }
+
+    /**
+     * Accessor
+     *
      * @see {_ribbonGroup}
      */
-    private get ribbonGroup(): Group {
+    private get ribbonGroup(): paper.Group {
         if (typeof this._ribbonGroup === "undefined") {
             throw new Error("Ribbon group not initialized");
         }
@@ -184,7 +184,7 @@ export default class Ribbonslider extends MenuItem {
      *
      * @see {_ribbon}
      */
-    private get ribbon(): Path.Rectangle {
+    private get ribbon(): paper.Path.Rectangle {
         if (typeof this._ribbon === "undefined") {
             throw new Error("Ribbon not initialized");
         }
@@ -197,7 +197,7 @@ export default class Ribbonslider extends MenuItem {
      *
      * @see {_grabDot}
      */
-    private get grabDot(): SymbolDefinition {
+    private get grabDot(): paper.SymbolDefinition {
         if (typeof this._grabDot === "undefined") {
             throw new Error("Grab Dot Group not initialized");
         }
@@ -210,7 +210,7 @@ export default class Ribbonslider extends MenuItem {
      *
      * @see {_gradient}
      */
-    private get gradient(): Path.Rectangle {
+    private get gradient(): paper.Path.Rectangle {
         if (typeof this._gradient === "undefined") {
             throw new Error("Gradient not initialized");
         }
@@ -223,21 +223,12 @@ export default class Ribbonslider extends MenuItem {
      *
      * @see {_ribbonGroup}
      */
-    private get ribbonMaskGroup(): Group {
+    private get ribbonMaskGroup(): paper.Group {
         if (typeof this._ribbonMaskGroup === "undefined") {
             throw new Error("Ribbon Mask Group not initialized");
         }
 
         return this._ribbonMaskGroup;
-    }
-
-    /**
-     * Accessor
-     *
-     * @see {_value}
-     */
-    private get value(): number {
-        return this._value;
     }
 
     /**
@@ -281,7 +272,7 @@ export default class Ribbonslider extends MenuItem {
     }
 
     protected setupGeometry(): void {
-        this._geometry = new Path.Circle(CENTER, this.settings[SettingsGroup.GEOMETRY].size);
+        this._geometry = new paper.Path.Circle(CENTER, this.settings[SettingsGroup.GEOMETRY].size);
 
         this.setGeometryColorDefault();
         this.geometry.strokeScaling = false;
@@ -292,9 +283,9 @@ export default class Ribbonslider extends MenuItem {
      * Created pre setup to utilize setGeometryColorDefault & setGeometryColorSelected
      */
     protected preSetup(): void {
-        this.childIndicator = new Path.Rectangle(
+        this.childIndicator = new paper.Path.Rectangle(
             ZERO_POINT,
-            new Point(
+            new paper.Point(
                 this.settings[SettingsGroup.RIBBONSLIDER].gradientLength * 0.8,
                 this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight * 0.8
             )
@@ -396,8 +387,8 @@ export default class Ribbonslider extends MenuItem {
             super.selectionLogic(angle);
         } else {
             this.updateText('' + this.value);
-            (this.arcGroup.children as Item[])
-                .forEach((a: Item): void => {
+            (<paper.Item[]>this.arcGroup.children)
+                .forEach((a: paper.Item): void => {
                     if (typeof a.data.fx !== "undefined" && a.data.fx.running) {
                         a.data.fx.stop();
                     }
@@ -472,14 +463,14 @@ export default class Ribbonslider extends MenuItem {
     protected itemReady(): void {
         super.itemReady();
 
-        this._ribbonMaskGroup = new Group({
+        this._ribbonMaskGroup = new paper.Group({
             children: [this.createMask(), this.ribbonGroup],
             blendMode: 'source-over'
         });
         this.ribbonMaskGroup.addChild(this.gradient);
         this.geometryGroup.addChild(this.ribbonMaskGroup);
 
-        this.geometryGroup.addChild(this.childIndicator);
+        this.geometryGroup.addChild(<paper.Path>this.childIndicator);
 
         if (this.inSnappingRange()) {
             this.ribbonMaskGroup.pivot = CENTER;
@@ -504,7 +495,7 @@ export default class Ribbonslider extends MenuItem {
     protected collectArcAngles(): void {
         let angles: Array<number> = new Array<number>();
 
-        let newAngle: number;
+        let newAngle: number = -1;
 
         const angle = Angle.toDeg(this.angle);
 
@@ -544,21 +535,21 @@ export default class Ribbonslider extends MenuItem {
             this.updateText('' + this.value);
             this.moveRibbonToValuePosition(this.value);
             this.ribbonMaskGroup.visible = true;
-            this.childIndicator.visible = false;
+            (<paper.Path>this.childIndicator).visible = false;
             this.gradient.visible = true;
 
         } else if (this.state === ItemState.SELECTED) {
 
         } else {
             this.ribbonMaskGroup.visible = false;
-            this.childIndicator.visible = true;
+            (<paper.Path>this.childIndicator).visible = true;
             this.gradient.visible = false;
             this.updateText('' + this.value);
 
         }
 
         if (this.state === ItemState.DOT) {
-            this.childIndicator.visible = false;
+            (<paper.Path>this.childIndicator).visible = false;
         }
     }
 
@@ -571,11 +562,11 @@ export default class Ribbonslider extends MenuItem {
 
     protected setGeometryColorDefault(): void {
         super.setGeometryColorDefault();
-        this.childIndicator.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
+        (<paper.Path>this.childIndicator).fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
     }
 
     protected setGeometryColorSelected(): void {
-        this.childIndicator.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
+        (<paper.Path>this.childIndicator).fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].selectionColor);
     }
 
     /**
@@ -603,10 +594,10 @@ export default class Ribbonslider extends MenuItem {
      * @see {setupRibbonContent}
      */
     private setupRibbon(): void {
-        this._ribbonGroup = new Group({blendMode: 'source-in'});
-        this._ribbon = new Path.Rectangle(
+        this._ribbonGroup = new paper.Group({blendMode: 'source-in'});
+        this._ribbon = new paper.Path.Rectangle(
             ZERO_POINT,
-            new Point(
+            new paper.Point(
                 this.getRibbonLength() + this.settings[SettingsGroup.RIBBONSLIDER].gradientLength,
                 this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight
             )
@@ -614,7 +605,7 @@ export default class Ribbonslider extends MenuItem {
 
         this.ribbonGroup.addChild(this.ribbon);
         this.ribbonGroup.pivot = this.ribbonGroup.bounds.leftCenter.add(
-            new Point(
+            new paper.Point(
                 this.settings[SettingsGroup.RIBBONSLIDER].gradientLength / 2,
                 0
             )
@@ -642,21 +633,20 @@ export default class Ribbonslider extends MenuItem {
         const onMouseEnterResize = () => {
             this.menu.canvas.style.cursor = "ew-resize";
         };
-        const textOnClick = (e: PaperMouseEvent) => {
+        const textOnClick = (e: paper.MouseEvent) => {
             this.value = e.target.data.value;
             this.moveRibbonToValuePosition(this.value, true);
         };
 
 
         for (let i = 0; i <= this.getRibbonLength() / (this.configuration.stepDist / 2); i++) {
-            const position = new Point(
+            const position = new paper.Point(
                 i * (this.configuration.stepDist / 2) + this.settings[SettingsGroup.RIBBONSLIDER].gradientLength / 2,
                 this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight / 2
             );
 
             if (i % 2 === 0) {
-
-                let valueText = (this.text.clone() as PointText);
+                let valueText = <paper.PointText>this.text.clone();
                 if (this.inSnappingRange()) {
                     valueText.rotate(90);
                 }
@@ -668,7 +658,7 @@ export default class Ribbonslider extends MenuItem {
                 valueText.content = '' + stepValue;
                 valueText.data.value = stepValue;
 
-                valueText.onMouseLeave = (e: PaperMouseEvent) => {
+                valueText.onMouseLeave = (e: paper.MouseEvent) => {
                     onMouseLeave();
                     e.target.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].text.color);
                 };
@@ -688,9 +678,9 @@ export default class Ribbonslider extends MenuItem {
      * @see {_gradient}
      */
     private setupGradient(): void {
-        this._gradient = new Path.Rectangle(
+        this._gradient = new paper.Path.Rectangle(
             ZERO_POINT,
-            new Point(
+            new paper.Point(
                 this.settings[SettingsGroup.RIBBONSLIDER].gradientLength,
                 this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight - this.settings[SettingsGroup.GEOMETRY].stroke.width
             )
@@ -698,14 +688,14 @@ export default class Ribbonslider extends MenuItem {
         this.gradient.bounds.center = CENTER;
         this.gradient.strokeWidth = 0;
 
-        let gradient = ColorFactory.fromArray([
+        let gradient = <paper.Gradient>ColorFactory.fromArray([
             this.settings[SettingsGroup.RIBBONSLIDER].gradientColorSides,
             [this.settings[SettingsGroup.RIBBONSLIDER].gradientColor, 0.3], // 30%
             [this.settings[SettingsGroup.RIBBONSLIDER].gradientColor, 0.7], // 70%
             this.settings[SettingsGroup.RIBBONSLIDER].gradientColorSides,
-        ]) as Gradient;
+        ]);
 
-        this.gradient.fillColor = new Color(
+        this.gradient.fillColor = new paper.Color(
             gradient,
             this.gradient.bounds.leftCenter,
             this.gradient.bounds.rightCenter
@@ -717,17 +707,17 @@ export default class Ribbonslider extends MenuItem {
      * @see {_grabDot}
      */
     private setupGrabDotSymbol(): void {
-        let grabDotGroup = new Group();
-        let dots = Array<Item>();
+        let grabDotGroup = new paper.Group();
+        let dots = Array<paper.Item>();
 
-        let circle = new Path.Circle(ZERO_POINT, 3);
+        let circle = new paper.Path.Circle(ZERO_POINT, 3);
         circle.fillColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].stroke.color);
         circle.strokeWidth = 0;
 
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 2; j++) {
                 let c = circle.clone();
-                c.position = ZERO_POINT.add(new Point(j * 10, i * 10));
+                c.position = ZERO_POINT.add(new paper.Point(j * 10, i * 10));
                 dots.push(c);
             }
 
@@ -736,17 +726,17 @@ export default class Ribbonslider extends MenuItem {
         }
         grabDotGroup.pivot = grabDotGroup.bounds.center;
 
-        this._grabDot = new SymbolDefinition(grabDotGroup);
+        this._grabDot = new paper.SymbolDefinition(grabDotGroup);
     }
 
     /**
      * Creates the fade out mask
      * @see {itemReady}
      */
-    private createMask(): Path.Rectangle {
-        let mask = new Path.Rectangle(
+    private createMask(): paper.Path.Rectangle {
+        let mask = new paper.Path.Rectangle(
             ZERO_POINT,
-            new Point(
+            new paper.Point(
                 this.menu.canvas.width * this.settings[SettingsGroup.RIBBONSLIDER].maskLengthMultiplier,
                 this.settings[SettingsGroup.RIBBONSLIDER].ribbonHeight + 2
             )
@@ -754,14 +744,14 @@ export default class Ribbonslider extends MenuItem {
         mask.bounds.center = CENTER;
         mask.strokeWidth = 0;
 
-        let gradient = ColorFactory.fromArray([
+        let gradient = <paper.Gradient>ColorFactory.fromArray([
             'rgba(0, 0, 0, 0)',
             ['#000', this.settings[SettingsGroup.RIBBONSLIDER].maskStart], // 10%
             ['#000', 1 - this.settings[SettingsGroup.RIBBONSLIDER].maskStart], // 90%
             'rgba(0, 0, 0, 0)',
-        ]) as Gradient;
+        ]);
 
-        mask.fillColor = new Color(gradient, mask.bounds.leftCenter, mask.bounds.rightCenter);
+        mask.fillColor = new paper.Color(gradient, mask.bounds.leftCenter, mask.bounds.rightCenter);
 
         return mask;
     }

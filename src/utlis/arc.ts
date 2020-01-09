@@ -1,5 +1,4 @@
 import Angle from "./angle";
-import {Color, Gradient, Path, Point} from "paper";
 import {ZERO_POINT} from "../lib/constants";
 import ColorFactory from "./color-factory";
 import Animation from "./animation";
@@ -64,9 +63,9 @@ export default class Arc {
      * @param {ArcDefinition} arcDefinition Arc definition
      * @param {SettingsDefinition} settings
      */
-    public static fromDefinition(arcDefinition: ArcDefinition, settings: SettingsDefinition): Path.Arc {
-        const arcPoint = (angle: number): Point => {
-            return new Point(
+    public static fromDefinition(arcDefinition: ArcDefinition, settings: SettingsDefinition): paper.Path.Arc {
+        const arcPoint = (angle: number): paper.Point => {
+            return new paper.Point(
                 Angle.toX(angle, settings.radii.arc),
                 Angle.toY(angle, settings.radii.arc)
             );
@@ -76,7 +75,7 @@ export default class Arc {
         const through = arcPoint(arcDefinition.through);
         const to = arcPoint(arcDefinition.to);
 
-        let arc = new Path.Arc(from, through, to);
+        let arc = new paper.Path.Arc(from, through, to);
 
         arc.add(ZERO_POINT);
 
@@ -84,13 +83,13 @@ export default class Arc {
         arc.strokeWidth = 0;
         arc.closed = true;
 
-        let fillColor: Color | Gradient = ColorFactory.fromSettings(settings.arc.color);
+        let fillColor: paper.Color | paper.Gradient = ColorFactory.fromSettings(settings.arc.color);
 
-        if (fillColor instanceof Color) {
+        if (fillColor instanceof paper.Color) {
             arc.fillColor = fillColor;
         } else {
             fillColor.radial = settings.arc.radial;
-            arc.fillColor = new Color(fillColor, ZERO_POINT, through);
+            arc.fillColor = new paper.Color(fillColor, ZERO_POINT, through);
         }
 
         arc.opacity = 0;
@@ -106,8 +105,8 @@ export default class Arc {
      * @param {Color} color Stroke Color
      * @param settings
      */
-    public static arcStroke(to: Point, color: Color, settings: SettingsDefinition): Path.Line {
-        const line = new Path.Line(ZERO_POINT, to);
+    public static arcStroke(to: paper.Point, color: paper.Color, settings: SettingsDefinition): paper.Path.Line {
+        const line = new paper.Path.Line(ZERO_POINT, to);
         line.strokeWidth = settings.arc.stroke.width;
         line.scale(1 / 2);
         line.strokeColor = typeof settings.arc.stroke.color === "undefined" ? color : ColorFactory.fromString(settings.arc.stroke.color);

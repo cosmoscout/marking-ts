@@ -1,12 +1,10 @@
-import {Color, Gradient, GradientStop} from 'paper';
-
 export default class ColorFactory {
     /**
      * Transparent white color
      *
      * @type {Color}
      */
-    public static readonly TRANSPARENT = new Color(255, 255, 255, 0);
+    public static readonly TRANSPARENT = new paper.Color(255, 255, 255, 0);
 
     /**
      * Creates a single color or gradients from a settings object
@@ -14,7 +12,7 @@ export default class ColorFactory {
      * @param {Array<string | Array<string | number>> | string} color
      * @return {Color | Gradient}
      */
-    public static fromSettings(color: Array<string | Array<string | number>> | string): Color | Gradient {
+    public static fromSettings(color: Array<string | Array<string | number>> | string): paper.Color | paper.Gradient {
         if (typeof color === "string") {
             return ColorFactory.fromString(color);
         } else if (Array.isArray(color)) {
@@ -30,12 +28,12 @@ export default class ColorFactory {
      * @param {string} color Color definition. CSS-String RGB(A)-String or Name
      * @return {Color}
      */
-    public static fromString(color: string): Color {
+    public static fromString(color: string): paper.Color {
         if (ColorFactory.isTransparent(color)) {
             return ColorFactory.TRANSPARENT;
         }
 
-        return new Color(color);
+        return new paper.Color(color);
     }
 
     /**
@@ -44,8 +42,8 @@ export default class ColorFactory {
      * @param {Array<string | Array<string | number>>} color
      * @return {Gradient | Color}
      */
-    public static fromArray(color: Array<string | Array<string | number>>): Gradient | Color {
-        let stops = new Array<GradientStop>();
+    public static fromArray(color: Array<string | Array<string | number>>): paper.Gradient | paper.Color {
+        let stops = new Array<paper.GradientStop>();
 
         color.forEach((gradient): void => {
             if (Array.isArray(gradient)) {
@@ -64,34 +62,34 @@ export default class ColorFactory {
                 }
 
                 if (firstType === "string") {
-                    colorDefinition = gradient[0] as string;
-                    stop = gradient[1] as number;
+                    colorDefinition = <string>gradient[0];
+                    stop = <number>gradient[1];
                 } else {
-                    colorDefinition = gradient[1] as string;
-                    stop = gradient[0] as number;
+                    colorDefinition = <string>gradient[1];
+                    stop = <number>gradient[0];
                 }
 
                 if (ColorFactory.isTransparent(colorDefinition)) {
                     colorDefinition = 'rgba(255, 255, 255, 0)';
                 }
 
-                stops.push(new GradientStop(ColorFactory.fromString(colorDefinition), stop));
+                stops.push(new paper.GradientStop(ColorFactory.fromString(colorDefinition), stop));
             } else {
                 if (ColorFactory.isTransparent(gradient)) {
-                    stops.push(new GradientStop(ColorFactory.TRANSPARENT));
+                    stops.push(new paper.GradientStop(ColorFactory.TRANSPARENT));
 
                     return;
                 }
 
-                stops.push(new GradientStop(ColorFactory.fromString(gradient)));
+                stops.push(new paper.GradientStop(ColorFactory.fromString(gradient)));
             }
         });
 
         if (color.length === 1) {
-            return stops[0].color as Color;
+            return stops[0].color;
         }
 
-        const gradient = new Gradient();
+        const gradient = new paper.Gradient();
         gradient.stops = stops;
 
         return gradient;

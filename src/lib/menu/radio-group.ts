@@ -2,15 +2,41 @@ import MenuItem from "./menu-item";
 import Checkbox from "./checkbox";
 import {ItemState, MenuItemEventType} from "../enums";
 
+/**
+ * A Radio group contains >=2 Checkboxes of which only one can be active at a given time
+ */
 export default class RadioGroup extends MenuItem {
+    public readonly TYPE = 'radiogroup';
+
+    /**
+     * Selects a single child from the radio group
+     *
+     * @param {string} itemId
+     */
+    public select(itemId: string) {
+        const toSelect = <Checkbox | undefined>this.getChildren().find(item => {
+            return item.itemId === itemId;
+        });
+
+        if (typeof toSelect === "undefined") {
+            return;
+        }
+
+        this.deselectChildren();
+        toSelect.select();
+    }
+
+    /**
+     * Deselect all children to ensure only one is active
+     *
+     * @inheritDoc
+     */
     protected changeActive(): void {
         if (this.state !== ItemState.ACTIVE) {
             return;
         }
 
-        (<Checkbox[]>this.getChildren()).forEach(child => {
-            child.deselect();
-        });
+        this.deselectChildren();
 
         this.activeChild = this.getNearestChild(this.angleToReferencePoint(this.menu.inputPosition));
 
@@ -23,10 +49,19 @@ export default class RadioGroup extends MenuItem {
                 this.event(MenuItemEventType.HOVER_SELECTION, this.activeChild);
             } else {
                 this.activeChild.state = ItemState.SELECTED;
-                (this.activeChild as Checkbox).select();
+                (<Checkbox>this.activeChild).select();
             }
         }
 
         this.root.redraw();
+    }
+
+    /**
+     * Set checkbox state to deselect
+     */
+    private deselectChildren(): void {
+        (<Checkbox[]>this.getChildren()).forEach(child => {
+            child.deselect();
+        });
     }
 }

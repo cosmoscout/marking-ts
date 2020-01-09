@@ -1,4 +1,3 @@
-import {Point} from 'paper';
 import {merge, Observable, Subject} from "rxjs";
 import {ZERO_POINT} from "../lib/constants";
 import {SettingsDefinition} from "../lib/interfaces";
@@ -45,25 +44,25 @@ export default class Trace {
     /**
      * Subject to push decision points onto
      *
-     * @type {Subject<Point>}
+     * @type {Subject<paper.Point>}
      * @readonly
      */
-    private readonly _onDirectionChanged$: Subject<Point>;
+    private readonly _onDirectionChanged$: Subject<paper.Point>;
 
     /**
      * Subject to push decision points onto
      *
-     * @type {Subject<Point>}
+     * @type {Subject<paper.Point>}
      * @readonly
      */
-    private readonly _onStutter$: Subject<Point>;
+    private readonly _onStutter$: Subject<paper.Point>;
 
     /**
      * Array containing all stroke points
      *
-     * @type Array<Point>
+     * @type Array<paper.Point>
      */
-    private _stroke: Array<Point>;
+    private _stroke: Array<paper.Point>;
 
     /**
      * Timeout ID for onStutter
@@ -76,9 +75,9 @@ export default class Trace {
      * @constructor
      */
     public constructor(settings: SettingsDefinition) {
-        this._stroke = Array<Point>();
-        this._onDirectionChanged$ = new Subject<Point>();
-        this._onStutter$ = new Subject<Point>();
+        this._stroke = Array<paper.Point>();
+        this._onDirectionChanged$ = new Subject<paper.Point>();
+        this._onStutter$ = new Subject<paper.Point>();
         this.MINIMUM_DISTANCE = settings[SettingsGroup.MAIN].minTraceDistance;
     }
 
@@ -87,9 +86,9 @@ export default class Trace {
      *
      * @see {_onStutter$}
      * @see {_onDirectionChanged$}
-     * @return {Observable<Point>}
+     * @return {Observable<paper.Point>}
      */
-    public get onDecisionPoint$(): Observable<Point> {
+    public get onDecisionPoint$(): Observable<paper.Point> {
         return merge(
             this.onStutter$,
             this.onDirectionChanged$
@@ -100,9 +99,9 @@ export default class Trace {
      * 'onStutter' Observable
      *
      * @see {_onStutter$}
-     * @return {Observable<Point>}
+     * @return {Observable<paper.Point>}
      */
-    public get onStutter$(): Observable<Point> {
+    public get onStutter$(): Observable<paper.Point> {
         return this._onStutter$.asObservable();
     }
 
@@ -110,9 +109,9 @@ export default class Trace {
      * 'onDirectionChanged' Observable
      *
      * @see {_onDirectionChanged$}
-     * @return {Observable<Point>}
+     * @return {Observable<paper.Point>}
      */
-    public get onDirectionChanged$(): Observable<Point> {
+    public get onDirectionChanged$(): Observable<paper.Point> {
         return this._onDirectionChanged$.asObservable();
     }
 
@@ -120,15 +119,15 @@ export default class Trace {
      * Resets the stroke array
      */
     public reset(): void {
-        this._stroke = Array<Point>();
+        this._stroke = Array<paper.Point>();
     }
 
     /**
      * Updates the gesture with a new position point
      *
-     * @param {Point} position
+     * @param {paper.Point} position
      */
-    public update(position: Point): void {
+    public update(position: paper.Point): void {
         if (this._stroke.length == 0) {
             this._stroke.push(position);
 
@@ -150,7 +149,7 @@ export default class Trace {
             for (let i = 1; i <= dist / this.SAMPLING_DISTANCE; ++i) {
                 let t: number = i / insertSamples;
                 this._stroke.push(
-                    new Point(
+                    new paper.Point(
                         t * (position.x as number) + (1 - t) * (last.x as number),
                         t * (position.y as number) + (1 - t) * (last.y as number)
                     )
@@ -180,10 +179,10 @@ export default class Trace {
     /**
      * Calculates the normalized direction of the stroke
      *
-     * @return {Point}
+     * @return {paper.Point}
      */
-    private getStrokeDirection(): Point {
-        return this._stroke.reduce((total: Point, current: Point, currentIndex: number): Point => {
+    private getStrokeDirection(): paper.Point {
+        return this._stroke.reduce((total: paper.Point, current: paper.Point, currentIndex: number): paper.Point => {
             if (currentIndex > 0) {
                 (total.x as number) += (current.x as number) / (this._stroke.length - 1);
                 (total.y as number) += (current.y as number) / (this._stroke.length - 1);
@@ -196,10 +195,10 @@ export default class Trace {
     /**
      * Calculates the angle of two points
      *
-     * @param {Point} p1
-     * @param {Point} p2
+     * @param {paper.Point} p1
+     * @param {paper.Point} p2
      */
-    private static angle(p1: Point, p2: Point): number {
+    private static angle(p1: paper.Point, p2: paper.Point): number {
         return Math.acos(p1.dot(p2) / ((p1.length as number) * (p2.length as number)));
     }
 }

@@ -1,10 +1,14 @@
 import MenuItem from "./menu-item";
 import {MenuItemEventType, SettingsGroup} from "../enums";
 import ColorFactory from "../../utlis/color-factory";
-import {Path, Rectangle, Size} from "paper";
 import {ZERO_POINT as CENTER} from "../constants";
 
+/**
+ * A Checkbox is either selected or not
+ */
 export default class Checkbox extends MenuItem {
+    public readonly TYPE = 'checkbox';
+
     /**
      * Selection Flag
      */
@@ -21,12 +25,25 @@ export default class Checkbox extends MenuItem {
         }
     }
 
+    /**
+     * Set the checkbox state to deselected
+     */
     public deselect(): void {
         this.itemSelected = false;
     }
 
+    /**
+     * Set the checkbox state to selected
+     */
     public select(): void {
         this.itemSelected = true;
+    }
+
+    /**
+     * True if checkbox is selected
+     */
+    public isSelected(): boolean {
+        return this.itemSelected;
     }
 
     /**
@@ -85,16 +102,16 @@ export default class Checkbox extends MenuItem {
     protected setupGeometry(): void {
         let rectangleSize = this.settings[SettingsGroup.GEOMETRY].size * 1.75;
 
-        let rectangle = new Rectangle(
+        let rectangle = new paper.Rectangle(
             CENTER,
-            new Size(rectangleSize, rectangleSize)
+            new paper.Size(rectangleSize, rectangleSize)
         );
         rectangle.center = CENTER;
 
         let cornerRadius = this.settings[SettingsGroup.CHECKBOX].cornerRadius;
-        let cornerSize = new Size(cornerRadius, cornerRadius);
+        let cornerSize = new paper.Size(cornerRadius, cornerRadius);
 
-        this._geometry = new Path.Rectangle(rectangle, cornerSize);
+        this._geometry = new paper.Path.Rectangle(rectangle, cornerSize);
 
         this.setGeometryColorDefault();
         this.geometry.strokeScaling = false;
