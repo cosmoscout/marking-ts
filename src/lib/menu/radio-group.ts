@@ -6,6 +6,8 @@ import {ItemState, MenuItemEventType} from "../enums";
  * A Radio group contains >=2 Checkboxes of which only one can be active at a given time
  */
 export default class RadioGroup extends MenuItem {
+    public readonly TYPE = 'radiogroup';
+
     /**
      * Selects a single child from the radio group
      *
@@ -47,7 +49,7 @@ export default class RadioGroup extends MenuItem {
                 this.event(MenuItemEventType.HOVER_SELECTION, this.activeChild);
             } else {
                 this.activeChild.state = ItemState.SELECTED;
-                (this.activeChild as Checkbox).select();
+                (<Checkbox>this.activeChild).select();
             }
         }
 

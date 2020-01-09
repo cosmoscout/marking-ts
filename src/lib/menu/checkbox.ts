@@ -8,6 +8,8 @@ import {ZERO_POINT as CENTER} from "../constants";
  * A Checkbox is either selected or not
  */
 export default class Checkbox extends MenuItem {
+    public readonly TYPE = 'checkbox';
+
     /**
      * Selection Flag
      */
@@ -41,7 +43,7 @@ export default class Checkbox extends MenuItem {
     /**
      * True if checkbox is selected
      */
-    public get selected(): boolean {
+    public isSelected(): boolean {
         return this.itemSelected === true;
     }
 

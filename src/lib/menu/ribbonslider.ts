@@ -21,6 +21,8 @@ import Arc from "../../utlis/arc";
 import {precision, roundNumber} from "../../utlis/numbers";
 
 export default class Ribbonslider extends MenuItem {
+    public readonly TYPE = 'ribbonslider';
+
     /**
      * Group holding
      * - Ribbon
