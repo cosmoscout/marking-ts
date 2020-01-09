@@ -1,7 +1,6 @@
 import MenuItem from "./menu-item";
 import Angle from "../../utlis/angle";
 import {MenuItemDefinition} from "../interfaces";
-import Crankslider from "./crankslider";
 import Ribbonslider from "./ribbonslider";
 import Checkbox from "./checkbox";
 import RadioGroup from "./radio-group";
@@ -35,10 +34,6 @@ export default class MenuParser {
                 item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon);
             } else {
                 switch (structure.type) {
-                    case 'crankslider':
-                        item = new Crankslider(structure.id, structure.direction, structure.text, structure.icon);
-                        break;
-
                     case 'slider':
                     case 'ribbonslider':
                         item = new Ribbonslider(structure.id, structure.direction, structure.text, structure.icon);
