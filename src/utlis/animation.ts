@@ -1,4 +1,3 @@
-import {Item, Point, Tween} from 'paper';
 import {DEFAULT_SCALE} from "../lib/constants";
 import {AnimatableData, AnimationDefinition, AnimationOptions} from "../lib/interfaces";
 
@@ -32,7 +31,7 @@ export abstract class IAnimation {
     /**
      * Animation target
      */
-    public abstract get target(): Item | undefined;
+    public abstract get target(): paper.Item | undefined;
 
     /**
      * Set the animation duration
@@ -68,7 +67,7 @@ export abstract class IAnimation {
 export default class Animation implements IAnimation {
     // Data
     protected _options: AnimationOptions = {};
-    private _target: Item | undefined;
+    private _target: paper.Item | undefined;
     private _from: AnimatableData | undefined;
     private _to: AnimatableData | undefined;
 
@@ -76,7 +75,7 @@ export default class Animation implements IAnimation {
     protected onStopCallbacks = new Array<Function>();
 
     // Tween instance
-    private _tween: Tween;
+    private _tween: paper.Tween | undefined;
 
     // Ready flag
     private _initialized: boolean = false;
@@ -150,7 +149,7 @@ export default class Animation implements IAnimation {
     /**
      * @inheritDoc
      */
-    public get target(): Item | undefined {
+    public get target(): paper.Item | undefined {
         return this._target;
     }
 
@@ -186,7 +185,9 @@ export default class Animation implements IAnimation {
             throw new Error("Animation not initialized");
         }
 
-        this._tween.start();
+        if (typeof this._tween !== "undefined") {
+            this._tween.start();
+        }
     }
 
     /**
@@ -197,17 +198,16 @@ export default class Animation implements IAnimation {
     public stop(goToEnd: boolean = true): void {
         // @ts-ignore
         if (typeof this._tween !== "undefined" && this._tween.running) {
-
             this._tween.stop();
 
             if (goToEnd && typeof this._to !== "undefined") {
                 if (typeof this._to['lastSegment.point'] !== "undefined") {
                     this._to['lastSegment'] = {
-                        'point': this._to['lastSegment.point'] as Point
+                        'point': <paper.Point>this._to['lastSegment.point']
                     };
                     delete this._to['lastSegment.point'];
                 }
-                (this._target as Item).set(this._to);
+                (<paper.Item>this._target).set(this._to);
             }
         }
 
@@ -235,7 +235,7 @@ export default class Animation implements IAnimation {
      * @return {Tween}
      * @throws {Error} If neither a 'from' or 'to' state is set
      */
-    private createTween(animation: AnimationDefinition): Tween {
+    private createTween(animation: AnimationDefinition): paper.Tween {
         if (typeof animation.from === "undefined" && typeof animation.to === "undefined") {
             throw new Error('Animation is missing "from" and "to" data.');
         }
@@ -245,7 +245,7 @@ export default class Animation implements IAnimation {
         if (typeof animation.from === "undefined") {
             // @ts-ignore
             tween = this._target.tweenTo(
-                this._to as object,
+                <object>this._to,
                 {
                     duration: this._options.duration,
                     easing: this._options.easing,
@@ -255,7 +255,7 @@ export default class Animation implements IAnimation {
         } else if (typeof animation.to === "undefined") {
             // @ts-ignore
             tween = this._target.tweenFrom(
-                this._from as object,
+                <object>this._from,
                 {
                     duration: this._options.duration,
                     easing: this._options.easing,
@@ -265,8 +265,8 @@ export default class Animation implements IAnimation {
         } else {
             // @ts-ignore
             tween = this._target.tween(
-                this._from as object,
-                this._to as object,
+                <object>this._from,
+                <object>this._to,
                 {
                     duration: this._options.duration,
                     easing: this._options.easing,
@@ -435,7 +435,7 @@ export class AnimationGroup extends Animation {
 
             if (typeof this._options.easing !== "undefined") {
                 // @ts-ignore
-                animation.easing = typeof this._options.easing === "function" ? this._options.easing : Tween.easings[this._options.easing];
+                animation.easing = typeof this._options.easing === "function" ? this._options.easing : paper.Tween.easings[this._options.easing];
             }
 
             animation.onFinish$(() => {
@@ -494,7 +494,7 @@ export class AnimationGroup extends Animation {
      *
      * @param {Item} item
      */
-    public remove(item: Item): void {
+    public remove(item: paper.Item): void {
         this._animations = this._animations.filter((animation: IAnimation): boolean => {
             return animation.target !== item;
         });

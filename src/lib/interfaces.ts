@@ -1,5 +1,4 @@
 import {Observable, Subject} from "rxjs";
-import {Color, Item, Point} from "paper";
 import {ClickState, DragState, MenuItemEventType, SettingsGroup} from "./enums";
 import Trace from "../utlis/trace";
 
@@ -9,8 +8,8 @@ import Trace from "../utlis/trace";
  * @see {Menu}
  */
 export interface MenuData {
-    inputPosition$: Subject<Point>;
-    inputPosition: Point;
+    inputPosition$: Subject<paper.Point>;
+    inputPosition: paper.Point;
     inputActivation$: Subject<Input>;
     inputDeactivation$: Subject<Input>;
 
@@ -39,7 +38,7 @@ export interface Input {
  * DragDefinition state data
  */
 export interface DragDefinition {
-    readonly position: Point;
+    readonly position: paper.Point;
     readonly state: DragState;
 }
 
@@ -84,7 +83,7 @@ export interface MenuEventDefinition {
  * to - To state
  */
 export interface AnimationDefinition {
-    target: Item;
+    target: paper.Item;
     from?: AnimatableData;
     to?: AnimatableData;
     options?: AnimationOptions;
@@ -102,12 +101,12 @@ export interface AnimationOptions {
  * Animatable Data
  */
 export interface AnimatableData {
-    [key: string]: Point | Color | number | string | null | undefined | Record<string, string | number | Point>;
+    [key: string]: paper.Point | paper.Color | number | string | null | undefined | Record<string, string | number | paper.Point>;
 
-    position?: Point | number;
-    scaling?: Point | number;
+    position?: paper.Point | number;
+    scaling?: paper.Point | number;
     opacity?: number;
-    fillColor?: string | Color | null;
+    fillColor?: string | paper.Color | null;
 }
 
 /**

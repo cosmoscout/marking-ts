@@ -85,8 +85,8 @@ export default class MenuParser {
      */
     private checkIds(itemId: string): void {
         if (this._itemIds.has(itemId)) {
-            const item = this._itemIds.get(itemId) as MenuItem;
-            console.warn(`Menu Item ID '${itemId}' already in use by Menu Item '${item.itemId}' with Parent '${(item.parent as MenuItem).itemId}'.`);
+            const item = <MenuItem>this._itemIds.get(itemId);
+            console.warn(`Menu Item ID '${itemId}' already in use by Menu Item '${item.itemId}' with Parent '${(<MenuItem>item.parent).itemId}'.`);
         }
     }
 
@@ -98,12 +98,12 @@ export default class MenuParser {
      */
     private static checkAngles(item: MenuItem): void {
         if (item.parent !== null && item.parent.parent !== null) {
-            const angle = (item.parent as MenuItem).angle;
+            const angle = (<MenuItem>item.parent).angle;
 
             const itemAngleOpposite = Angle.opposite(item.angle);
 
             if (Math.abs(angle - itemAngleOpposite) < Number.EPSILON) {
-                console.error(`Item angle clashes with back angle! Item: ${item.itemId} (${Angle.toDeg(item.angle)}°) | Parent: ${(item.parent as MenuItem).itemId} (${Angle.toDeg(angle)}°)`);
+                console.error(`Item angle clashes with back angle! Item: ${item.itemId} (${Angle.toDeg(item.angle)}°) | Parent: ${(<MenuItem>item.parent).itemId} (${Angle.toDeg(angle)}°)`);
             }
         }
     }

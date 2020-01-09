@@ -1,9 +1,7 @@
-import {Group} from 'paper';
-
 /**
  * This class removes the automatic hitTest calls from paper.js as they are not needed
  */
-export default class Base extends Group {
+export default class Base extends paper.Group {
     //@ts-ignore
     public hitTestAll(point: paper.Point, options?: object): paper.HitResult[] {
         return [];
@@ -11,7 +9,7 @@ export default class Base extends Group {
 
     //@ts-ignore
     public hitTest(point: paper.Point, options?: object): paper.HitResult {
-        return undefined;
+        return new paper.HitResult();
     }
 
     // @ts-ignore

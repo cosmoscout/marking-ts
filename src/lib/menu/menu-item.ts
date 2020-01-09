@@ -1,4 +1,3 @@
-import {Color, CompoundPath, Group, Item, Path, Point, PointText, Rectangle} from 'paper';
 import {Observable, Subject, Subscription} from "rxjs";
 import {distinctUntilChanged, map} from "rxjs/operators";
 import Angle from '../../utlis/angle';
@@ -79,15 +78,15 @@ export default class MenuItem extends Base implements MenuIdentifier {
     /**
      * Geometries
      */
-    protected readonly geometryGroup: Group;
-    protected readonly arcGroup: Group;
-    protected readonly lineGroup: Group;
+    protected readonly geometryGroup: paper.Group;
+    protected readonly arcGroup: paper.Group;
+    protected readonly lineGroup: paper.Group;
     protected arcs: Array<ArcDefinition>;
-    protected _text: PointText | undefined;
-    protected _geometry: Path | undefined;
-    protected _selectionRadius: Path | undefined;
-    protected _connector: Path.Line | undefined;
-    protected _icon: CompoundPath | undefined;
+    protected _text: paper.PointText | undefined;
+    protected _geometry: paper.Path | undefined;
+    protected _selectionRadius: paper.Path | undefined;
+    protected _connector: paper.Path.Line | undefined;
+    protected _icon: paper.CompoundPath | undefined;
 
     /**
      * True if input device is in back navigation arc
@@ -127,13 +126,13 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * Position if item is in 'child' state.
      * Object is frozen
      */
-    protected _positionChild: Point | undefined;
+    protected _positionChild: paper.Point | undefined;
 
     /**
      * Position if item is in 'dot' state.
      * Object is frozen
      */
-    protected _positionDot: Point | undefined;
+    protected _positionDot: paper.Point | undefined;
 
     /**
      * The event previous send on the event menu Subject
@@ -160,9 +159,9 @@ export default class MenuItem extends Base implements MenuIdentifier {
         this.isRoot = isRoot;
 
         // Paper.js Objects
-        this.geometryGroup = new Group();
-        this.arcGroup = new Group();
-        this.lineGroup = new Group();
+        this.geometryGroup = new paper.Group();
+        this.arcGroup = new paper.Group();
+        this.lineGroup = new paper.Group();
         this.pivot = CENTER;
 
         this.arcs = new Array<ArcDefinition>();
@@ -192,7 +191,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
         if (this.isRoot) {
             this.project.activeLayer.addChild(this);
         } else {
-            (this.parent as MenuItem).addChild(this);
+            (<MenuItem>this.parent).addChild(this);
         }
 
         this._inputAngle$ = this.menu.inputPosition$.pipe(
@@ -202,13 +201,13 @@ export default class MenuItem extends Base implements MenuIdentifier {
             })
         );
 
-        this._positionChild = new Point(
+        this._positionChild = new paper.Point(
             Angle.toX(this.angle, this.settings[SettingsGroup.RADII].child),
             Angle.toY(this.angle, this.settings[SettingsGroup.RADII].child)
         ).floor();
         Object.freeze(this._positionChild);
 
-        this._positionDot = new Point(
+        this._positionDot = new paper.Point(
             Angle.toX(this.angle, this.settings[SettingsGroup.RADII].dot),
             Angle.toY(this.angle, this.settings[SettingsGroup.RADII].dot)
         ).floor();
@@ -448,7 +447,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
             this.updateText(this.textContent);
         } else {
             this.subscription && this.subscription.unsubscribe();
-            (this.arcGroup.children as Item[]).forEach((arc: Item): void => {
+            (<paper.Item[]>this.arcGroup.children).forEach((arc: paper.Item): void => {
                 arc.opacity = 0;
             });
         }
@@ -456,11 +455,11 @@ export default class MenuItem extends Base implements MenuIdentifier {
         this.setGroupsVisibility();
 
         if (this.state === ItemState.HIDDEN) {
-            const parent: MenuItem = this.parent as MenuItem;
+            const parent: MenuItem = <MenuItem>this.parent;
             const activeChild = parent.activeChild;
 
             let isParentParent = false;
-            const isBack = parent.parent !== null && (parent.parent as MenuItem).state === ItemState.BACK;
+            const isBack = parent.parent !== null && (<MenuItem>parent.parent).state === ItemState.BACK;
             const parentHiddenOrDot = parent.state === ItemState.HIDDEN || parent.state === ItemState.DOT;
 
             if (typeof activeChild !== "undefined") {
@@ -563,7 +562,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      *
      * @return {Path.Line}
      */
-    public get connector(): Path.Line {
+    public get connector(): paper.Path.Line {
         if (typeof this._connector === "undefined") {
             throw new Error(`Connector missing on ${this.itemId}`);
         }
@@ -594,7 +593,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
             return this;
         }
 
-        return (this.parent as MenuItem).root;
+        return (<MenuItem>this.parent).root;
     }
 
     /**
@@ -603,7 +602,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * @return {Path.Circle}
      * @throws {Error}
      */
-    protected get geometry(): Path.Circle {
+    protected get geometry(): paper.Path.Circle {
         if (typeof this._geometry === "undefined") {
             throw new Error(`Geometry missing on ${this.itemId}`);
         }
@@ -618,7 +617,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * @return {CompoundPath}
      * @throws {Error}
      */
-    protected get icon(): CompoundPath {
+    protected get icon(): paper.CompoundPath {
         if (typeof this._icon === "undefined") {
             throw new Error(`Icon missing on ${this.itemId}`);
         }
@@ -632,7 +631,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * @return {PointText}
      * @throws {Error}
      */
-    protected get text(): PointText {
+    protected get text(): paper.PointText {
         if (typeof this._text === "undefined") {
             throw new Error(`Text missing on ${this.itemId}`);
         }
@@ -644,7 +643,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * @return {Point}
      * @throws {Error}
      */
-    protected get positionChild(): Point {
+    protected get positionChild(): paper.Point {
         if (typeof this._positionChild === "undefined") {
             throw new Error(`Child Position missing on ${this.itemId}`);
         }
@@ -656,7 +655,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * @return {Point}
      * @throws {Error}
      */
-    protected get positionDot(): Point {
+    protected get positionDot(): paper.Point {
         if (typeof this._positionDot === "undefined") {
             throw new Error(`Dot Position missing on ${this.itemId}`);
         }
@@ -668,7 +667,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * @return {Path.Circle}
      * @throws {Error}
      */
-    protected get selectionRadius(): Path.Circle {
+    protected get selectionRadius(): paper.Path.Circle {
         if (typeof this._selectionRadius === "undefined") {
             throw new Error(`Selection Radius not initialized on ${this.itemId}`);
         }
@@ -691,7 +690,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * Creates the connecting line
      */
     protected setupConnector(): void {
-        this._connector = new Path.Line(CENTER, CENTER);
+        this._connector = new paper.Path.Line(CENTER, CENTER);
 
         this.connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
         this.connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
@@ -705,12 +704,12 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * Creates the geometry
      */
     protected setupGeometry(): void {
-        this._geometry = new Path.Circle(CENTER, this.settings[SettingsGroup.GEOMETRY].size);
+        this._geometry = new paper.Path.Circle(CENTER, this.settings[SettingsGroup.GEOMETRY].size);
 
         if (this.childCount === 0 && this.settings[SettingsGroup.GEOMETRY].useActionShape) {
-            this.geometry.segments[2].handleIn = new Point(0, -this.settings[SettingsGroup.GEOMETRY].size / 4);
-            this.geometry.segments[2].handleOut = new Point(0, this.settings[SettingsGroup.GEOMETRY].size / 4);
-            this.geometry.segments[2].point = this.geometry.segments[2].point.add(new Point(this.settings[SettingsGroup.GEOMETRY].size / 3, 0));
+            this.geometry.segments[2].handleIn = new paper.Point(0, -this.settings[SettingsGroup.GEOMETRY].size / 4);
+            this.geometry.segments[2].handleOut = new paper.Point(0, this.settings[SettingsGroup.GEOMETRY].size / 4);
+            this.geometry.segments[2].point = this.geometry.segments[2].point.add(new paper.Point(this.settings[SettingsGroup.GEOMETRY].size / 3, 0));
             this.geometry.pivot = CENTER;
             this.geometry.rotate(this.positionChild.angle);
         }
@@ -724,16 +723,16 @@ export default class MenuItem extends Base implements MenuIdentifier {
      */
     protected setupIcon(): void {
         if (typeof this.iconName === "undefined") {
-            this._icon = new CompoundPath('');
+            this._icon = new paper.CompoundPath('');
         } else {
             // @ts-ignore
-            const icon: IconDefinition = fontawesome[this._iconName as IconName];
+            const icon: IconDefinition = fontawesome[<IconName>this._iconName];
 
             if (typeof icon === "undefined") {
                 console.error(`Icon '${this.iconName}' does not exist.`);
-                this._icon = new CompoundPath('');
+                this._icon = new paper.CompoundPath('');
             } else {
-                this._icon = new CompoundPath((icon.icon[4] as string));
+                this._icon = new paper.CompoundPath(<string>icon.icon[4]);
 
                 this.icon.scale(this.settings[SettingsGroup.SCALES].icon.base * this.settings[SettingsGroup.SCALES].icon.solo); // Default Size = 512px   1/16 = 0.0625 = 32px
                 this.setIconColorDefault();
@@ -747,7 +746,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * Sets up the text
      */
     protected setupText(): void {
-        this._text = new PointText(CENTER.clone());
+        this._text = new paper.PointText(CENTER.clone());
 
         this.text.justification = 'center';
         this.text.fontSize = '16px';
@@ -763,11 +762,13 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * Clicking outside the radius will hide the menu
      */
     protected setupSelectionRadius(): void {
-        this._selectionRadius = new Path.Circle(CENTER, this.settings[SettingsGroup.RADII].maxClickRadius);
+        this._selectionRadius = new paper.Path.Circle(CENTER, this.settings[SettingsGroup.RADII].maxClickRadius);
         this.selectionRadius.fillColor = null;
         this.selectionRadius.strokeWidth = 1;
         this.selectionRadius.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.GEOMETRY].color);
-        this.selectionRadius.strokeColor.alpha = 0.25;
+        if (this.selectionRadius.strokeColor !== null) {
+            this.selectionRadius.strokeColor.alpha = 0.25;
+        }
         this.selectionRadius.visible = false;
     }
 
@@ -777,9 +778,9 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * @return {Array<MenuItem>}
      */
     protected getChildren(): Array<MenuItem> {
-        return (this.children as Item[]).filter((child: Item): boolean => {
+        return <Array<MenuItem>>(<paper.Item[]>this.children).filter((child: paper.Item): boolean => {
             return child instanceof MenuItem;
-        }) as Array<MenuItem>;
+        });
     }
 
     /**
@@ -812,7 +813,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
         this.text.content = content;
 
         if (this.text.bounds.size.width + 10 > this.geometry.bounds.size.width) {
-            this.text.fitBounds((this.geometry.bounds as Rectangle).scale(MenuItem.TEXT_OVERFLOW_SCALE));
+            this.text.fitBounds((<paper.Rectangle>this.geometry.bounds).scale(MenuItem.TEXT_OVERFLOW_SCALE));
         }
 
         this.text.position = CENTER;
@@ -823,7 +824,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      *
      * @param {Point} point
      */
-    protected angleToReferencePoint(point: Point): number {
+    protected angleToReferencePoint(point: paper.Point): number {
         let angle: number = REFERENCE_POINT.getDirectedAngle(this.globalToLocal(point));
 
         if (angle < 0) {
@@ -911,7 +912,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
 
         this.geometryGroup.position = CENTER;
 
-        (this.arcGroup.children as Item[]).forEach((arc: Item): void => {
+        (<paper.Item[]>this.arcGroup.children).forEach((arc: paper.Item): void => {
             arc.opacity = 0;
         });
 
@@ -981,8 +982,8 @@ export default class MenuItem extends Base implements MenuIdentifier {
             if (this.settings[SettingsGroup.ARC].stroke.enabled) {
                 this.lineGroup.addChild(
                     Arc.arcStroke(
-                        arcGeometry.firstSegment.point as Point,
-                        arcGeometry.fillColor as Color,
+                        <paper.Point>arcGeometry.firstSegment.point,
+                        <paper.Color>arcGeometry.fillColor,
                         this.settings
                     )
                 );
@@ -1010,7 +1011,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
         const dist: number = CENTER.getDistance(this.globalToLocal(this.menu.inputPosition));
 
         if (!this.isRoot) {
-            this.isInBackNavigationArc = Angle.between(angle, (this.parentArc as ArcDefinition).from, (this.parentArc as ArcDefinition).to);
+            this.isInBackNavigationArc = Angle.between(angle, (<ArcDefinition>this.parentArc).from, (<ArcDefinition>this.parentArc).to);
         }
 
         if (dist < this.settings[SettingsGroup.GEOMETRY].sizeDeadZone) {
@@ -1044,7 +1045,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
     protected selectionLogicInGeometryOperations(): void {
         this.resetActiveHovered();
 
-        (this.arcGroup.children as Item[]).forEach((arc: Item): void => {
+        (<paper.Item[]>this.arcGroup.children).forEach((arc: paper.Item): void => {
             arc.opacity = 0;
         });
 
@@ -1058,7 +1059,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      */
     protected selectionLogicBackOperations() {
         this.resetChildColor();
-        this.event(MenuItemEventType.BACK_HOVER, this.parent as MenuItem);
+        this.event(MenuItemEventType.BACK_HOVER, <MenuItem>this.parent);
         this.updateText('Back');
     }
 
@@ -1125,7 +1126,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * @see {Menu}
      * @param {Point} decisionPoint
      */
-    protected traceLogic(decisionPoint: Point): void {
+    protected traceLogic(decisionPoint: paper.Point): void {
         const angle = this.angleToReferencePoint(decisionPoint);
         const localPos = this.globalToLocal(decisionPoint);
 
@@ -1416,7 +1417,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
         } else {
             to = {
                 scaling: 0,
-                position: CENTER.subtract(this.position as Point).add((this.position as Point).multiply(this.settings[SettingsGroup.SCALES].dot))
+                position: CENTER.subtract(<paper.Point>this.position).add((<paper.Point>this.position).multiply(this.settings[SettingsGroup.SCALES].dot))
             };
         }
 
@@ -1503,13 +1504,13 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * Animation to Dot
      */
     protected animateStateDot(): void {
-        if ((this.parent as MenuItem).state === ItemState.PARENT) {
+        if ((<MenuItem>this.parent).state === ItemState.PARENT) {
             //this.geometryGroup.visible = false;
             this._animations.push(
                 new Animation({
                     target: this,
                     from: {
-                        position: this.position as Point,
+                        position: <paper.Point>this.position,
                     },
                     to: {
                         position: this.positionDot,
@@ -1530,7 +1531,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
             new Animation({
                 target: this,
                 from: {
-                    position: this.parent.position as Point,
+                    position: <paper.Point>this.parent.position,
                 },
                 to: {
                     position: this.positionDot,
@@ -1539,7 +1540,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
             new Animation({
                 target: this.geometryGroup,
                 from: {
-                    position: CENTER.subtract((this.parent as Item).position as Point),
+                    position: CENTER.subtract(<paper.Point>(<paper.Item>this.parent).position),
                     scaling: 0,
                 },
                 to: {
@@ -1556,15 +1557,15 @@ export default class MenuItem extends Base implements MenuIdentifier {
     protected animateStateBack(): void {
         this._state = ItemState.CHILD;
 
-        const parent = this.parent as MenuItem;
+        const parent = <MenuItem>this.parent;
 
         let rootPos = this.menu.inputPosition;
         if (!parent.isRoot) {
-            rootPos = (this.root.position as Point).add(parent.globalToLocal(this.menu.inputPosition)).floor();
-            ((this.parent as MenuItem).parent as MenuItem).connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
-            ((this.parent as MenuItem).parent as MenuItem).connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
-            ((this.parent as MenuItem).parent as MenuItem).geometry.opacity = 1;
-            ((this.parent as MenuItem).parent as MenuItem).getChildren().forEach((child: MenuItem) => {
+            rootPos = (<paper.Point>this.root.position).add(parent.globalToLocal(this.menu.inputPosition)).floor();
+            (<MenuItem>(<MenuItem>this.parent).parent).connector.strokeWidth = this.settings[SettingsGroup.CONNECTOR].width;
+            (<MenuItem>(<MenuItem>this.parent).parent).connector.strokeColor = ColorFactory.fromString(this.settings[SettingsGroup.CONNECTOR].color);
+            (<MenuItem>(<MenuItem>this.parent).parent).geometry.opacity = 1;
+            (<MenuItem>(<MenuItem>this.parent).parent).getChildren().forEach((child: MenuItem) => {
                 child.geometry.opacity = 1;
             });
         }
@@ -1651,12 +1652,12 @@ export default class MenuItem extends Base implements MenuIdentifier {
         let itemPos = REFERENCE_POINT.clone();
         itemPos.angleInRadians = activeChild.angle - Angle.HALF_CIRCLE_RAD / 2;
 
-        itemPos.x = Math.abs(itemPos.x as number) < Number.EPSILON ? 0 : itemPos.x;
-        itemPos.y = Math.abs(itemPos.y as number) < Number.EPSILON ? 0 : itemPos.y;
+        itemPos.x = Math.abs(itemPos.x) < Number.EPSILON ? 0 : itemPos.x;
+        itemPos.y = Math.abs(itemPos.y) < Number.EPSILON ? 0 : itemPos.y;
 
         itemPos.length = localMousePos.multiply(itemPos).length;
 
-        if ((itemPos.length as number) < this.settings[SettingsGroup.MAIN].minDistance) {
+        if (itemPos.length < this.settings[SettingsGroup.MAIN].minDistance) {
             itemPos.length = this.settings[SettingsGroup.MAIN].minDistance;
         }
 
@@ -1666,13 +1667,13 @@ export default class MenuItem extends Base implements MenuIdentifier {
             new Animation({
                 target: this.root,
                 to: {
-                    position: (this.root.position as Point).add(parentDelta).floor()
+                    position: (<paper.Point>this.root.position).add(parentDelta).floor()
                 }
             }),
             new Animation({
                 target: activeChild,
                 from: {
-                    position: activeChild.position as Point,
+                    position: <paper.Point>activeChild.position,
                 },
                 to: {
                     position: itemPos,
@@ -1767,18 +1768,18 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * @param angle
      */
     protected animateArcs(angle: number): void {
-        (this.arcGroup.children as Item[]).forEach((arc: Item): void => {
+        (<paper.Item[]>this.arcGroup.children).forEach((arc: paper.Item): void => {
             if (Angle.between(angle, arc.data.from, arc.data.to)) {
-                (this.arcGroup.children as Item[])
-                    .filter((a: Item): boolean => a !== arc)
-                    .forEach((a: Item): void => {
+                (<paper.Item[]>this.arcGroup.children)
+                    .filter((a: paper.Item): boolean => a !== arc)
+                    .forEach((a: paper.Item): void => {
                         if (typeof a.data.fx !== "undefined" && a.data.fx.running) {
                             a.data.fx.stop();
                         }
                         a.opacity = 0;
                     });
 
-                if ((arc.opacity as number) < 1 && !arc.data.fx.running) {
+                if (arc.opacity < 1 && !arc.data.fx.running) {
                     arc.data.fx.initialize({
                         target: arc,
                         to: {
