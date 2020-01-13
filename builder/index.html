@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tasty Builder</title>
+    <script src="https://unpkg.com/lodash"></script>
+    <script src="https://unpkg.com/paper"></script>
+    <script src="https://github.com/cosmoscout/tasty.js/releases/latest/download/tasty.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        body {
+            /*overflow: hidden;*/
+        }
+
+        #editor-container {
+            height: 100vh;
+            overflow-y: scroll;
+        }
+
+        #canvas {
+            height: 100vh;
+            background: #bfbfbf;
+            overflow: hidden;
+        }
+
+        #checkbox-settings,
+        #slider-settings {
+            display: none;
+        }
+
+        #checkbox-settings.active,
+        #slider-settings.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-3" id="editor-container">
+            <h1 class="pt-3">Tasty Builder</h1>
+            <form id="editor">
+                <div class="form-group">
+                    <label for="itemId">Item ID:</label>
+                    <input id="itemId" class="form-control" type="text">
+                    <small class="form-text text-muted">Unique ID</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="text">Text:</label>
+                    <input id="text" class="form-control" type="text">
+                    <small class="form-text text-muted">Text shown on hover</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="icon">Icon:</label>
+                    <input id="icon" class="form-control" type="text">
+                    <small class="form-text text-muted">FontAwesome icon name</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="direction">Direction:</label>
+                    <input id="direction" class="form-control" type="number" min="0" max="360" value="0">
+                    <small class="form-text text-muted">0° - North | 90° - East | 180° - South | 270° - West</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="type">Type:</label>
+                    <select id="type" class="form-control">
+                        <option value="" selected>Action</option>
+                        <option value="checkbox">Checkbox</option>
+                        <option value="slider">Slider</option>
+                    </select>
+                </div>
+
+                <div class="form-check" id="checkbox-settings">
+                    <hr>
+                    <input id="checkbox" class="form-check-input" type="checkbox">
+                    <label for="checkbox" class="form-check-label">initially selected</label>
+                    <hr>
+                </div>
+
+                <div id="slider-settings">
+                    <div class="form-group">
+                        <hr>
+                        <label for="slider-min">Min:</label>
+                        <input class="form-control" id="slider-min" type="number">
+                        <small class="form-text text-muted">Min slider value</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slider-max">Max:</label>
+                        <input class="form-control" id="slider-max" type="number">
+                        <small class="form-text text-muted">Max slider value</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slider-initial">Initial:</label>
+                        <input class="form-control" id="slider-initial" type="number">
+                        <small class="form-text text-muted">Initial slider value</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slider-precision">Precision:</label>
+                        <input class="form-control" id="slider-precision" type="number" step="0.01" value="1">
+                        <small class="form-text text-muted">Value precision. E.g.: 0.1</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slider-step-dist">Step Distance:</label>
+                        <input class="form-control" id="slider-step-dist" type="number">
+                        <small class="form-text text-muted">Distance in px between steps</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slider-step-size">Step Size:</label>
+                        <input class="form-control" id="slider-step-size" type="number">
+                        <small class="form-text text-muted">Value size between steps</small>
+                        <hr>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="parent">Parent:</label>
+                    <select class="form-control" id="parent">
+                    </select>
+                </div>
+
+                <button class="btn btn-outline-primary" id="compile">Taste</button>
+            </form>
+            <hr>
+            Output:
+            <pre class="pre-scrollable pb-3"><code id="output"></code></pre>
+        </div>
+
+        <div class="col-9" id="canvas"></div>
+    </div>
+</div>
+
+<script src="builder.js"></script>
+<script>
+    new TastyBuilder();
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@ import MenuItem from "./menu-item";
 import {MenuItemEventType, SettingsGroup} from "../enums";
 import ColorFactory from "../../utlis/color-factory";
 import {ZERO_POINT as CENTER} from "../constants";
+import {MenuItemDefinition} from "../interfaces";
 
 /**
  * A Checkbox is either selected or not
@@ -44,6 +45,20 @@ export default class Checkbox extends MenuItem {
      */
     public isSelected(): boolean {
         return this.itemSelected;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public toJSON(): MenuItemDefinition {
+        const json = super.toJSON();
+        json.type = this.TYPE;
+        json.data = {
+            selected: this.itemSelected
+        };
+        delete json.children;
+
+        return json;
     }
 
     /**

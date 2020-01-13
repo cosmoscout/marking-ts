@@ -6,7 +6,14 @@ import {filter, finalize, map, mergeMap, switchMap, takeUntil, timeoutWith} from
 import Animation from "../../utlis/animation";
 import Trace from "../../utlis/trace";
 import {ZERO_POINT} from "../constants";
-import {DragDefinition, Input, MenuData, MenuEventDefinition, SettingsDefinition} from "../interfaces";
+import {
+    DragDefinition,
+    Input,
+    MenuData,
+    MenuEventDefinition,
+    MenuItemDefinition,
+    SettingsDefinition
+} from "../interfaces";
 import ColorFactory from "../../utlis/color-factory";
 
 /**
@@ -338,11 +345,22 @@ export default class Menu implements MenuData {
      * Set the canvas size to window.innerWidth / height
      */
     public resize(): void {
-        if (!window || typeof this._scope === "undefined") {
+        if (typeof this._root === "undefined" || typeof this._scope === "undefined") {
             return;
         }
 
-        this._scope.project.view.viewSize = new paper.Size(window.innerWidth, window.innerHeight);
+        this._scope.project.view.viewSize = new paper.Size(this._root.offsetWidth, this._root.offsetHeight);
+    }
+
+    /**
+     * Generates a JSON representation of the complete menu structure
+     */
+    public toJSON(): MenuItemDefinition {
+        if (typeof this._rootItem === "undefined") {
+            console.error('Menu not initialized.');
+        }
+
+        return (<MenuItem>this._rootItem).toJSON();
     }
 
     /**
@@ -388,6 +406,15 @@ export default class Menu implements MenuData {
      * Sets up needed Observable data mapping and subscribing
      */
     private setupObservables(): void {
+        // TODO
+        // Use paper mouse event as it translates the mouse position correct for non full screen canvases
+        (<Observable<paper.MouseEvent>>fromEvent((<paper.PaperScope>this._scope).view, 'mousemove'))
+            .pipe(
+                map((e: paper.MouseEvent) => {
+                    return e.point;
+                })
+            ).subscribe(this.inputPosition$);
+
         // Manually creating dragging events from Inputs
         // TODO!
         this.inputActivation$.pipe(
@@ -448,7 +475,6 @@ export default class Menu implements MenuData {
      * Sets up observables from PointerEvent
      */
     private setupObservableDataFromPointerEvents(): void {
-        const inputMove = this.createObserver('pointermove');
         const inputUp = merge(this.createObserver('pointerup'), this.createObserver('pointercancel'));
         const inputDown = this.createObserver('pointerdown');
         const inputLeave = merge(this.createObserver('pointerleave'), this.createObserver('pointerout'));
@@ -456,32 +482,20 @@ export default class Menu implements MenuData {
         inputDown.subscribe(this.inputActivation$);
         inputUp.subscribe(this.inputDeactivation$);
         inputLeave.subscribe(this.inputDeactivation$);
-
-        inputMove.pipe(
-            map((e: MouseEvent): paper.Point => {
-                return new paper.Point(
-                    e.clientX,
-                    e.clientY
-                );
-            })
-        ).subscribe(this.inputPosition$);
     }
 
     /**
      * Sets up observables from Touch and Mouse Events
      */
     private setupObservableDataFromInputEvents(): void {
-        const touchMove = this.createObserver('touchmove');
         const touchEnd = this.createObserver('touchend');
         const touchStart = this.createObserver('touchdown');
         const touchCancel = this.createObserver('touchcancel');
 
-        const mouseMove = this.createObserver('mousemove');
         const mouseUp = this.createObserver('mouseup');
         const mouseDown = this.createObserver('mousedown');
         const mouseLeave = this.createObserver('mouseleave');
 
-        const inputMove = merge(mouseMove, touchMove);
         const inputUp = merge(touchEnd, mouseUp);
         const inputDown = merge(touchStart, mouseDown);
         const inputLeave = merge(touchCancel, mouseLeave);
@@ -489,15 +503,6 @@ export default class Menu implements MenuData {
         inputDown.subscribe(this.inputActivation$);
         inputUp.subscribe(this.inputDeactivation$);
         inputLeave.subscribe(this.inputDeactivation$);
-
-        inputMove.pipe(
-            map((e: MouseEvent): paper.Point => {
-                return new paper.Point(
-                    e.clientX,
-                    e.clientY
-                );
-            })
-        ).subscribe(this.inputPosition$);
     }
 
     /**

@@ -1,6 +1,7 @@
 import MenuItem from "./menu-item";
 import Checkbox from "./checkbox";
 import {ItemState, MenuItemEventType} from "../enums";
+import {MenuItemDefinition} from "../interfaces";
 
 /**
  * A Radio group contains >=2 Checkboxes of which only one can be active at a given time
@@ -24,6 +25,16 @@ export default class RadioGroup extends MenuItem {
 
         this.deselectChildren();
         toSelect.select();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public toJSON(): MenuItemDefinition {
+        const json = super.toJSON();
+        json.type = this.TYPE;
+
+        return json;
     }
 
     /**

@@ -30,38 +30,43 @@ export default class MenuParser {
                 structure.type = 'checkbox';
             }
 
-            if (typeof structure.type === "undefined" || structure.type.length === 0) {
-                item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon);
-            } else {
-                switch (structure.type) {
-                    case 'slider':
-                    case 'ribbonslider':
-                        item = new Ribbonslider(structure.id, structure.direction, structure.text, structure.icon);
-                        break;
-
-                    case 'checkbox':
-                        item = new Checkbox(structure.id, structure.direction, structure.text, structure.icon);
-                        break;
-
-                    case 'radiogroup':
-                    case 'radio-group':
-                        item = new RadioGroup(structure.id, structure.direction, structure.text, structure.icon);
-                        break;
-
-                    default:
-                        throw new Error('Structure Type not known.');
-                }
-            }
+            item = this.parseItem(structure);
 
             parent.addChild(item);
             MenuParser.checkAngles(item);
         }
 
-        this._itemIds.set(structure.id, item);
+        this.map.set(structure.id, item);
 
         structure.children && structure.children.forEach((child): void => {
             this.parse(child, item);
         });
+
+        return item;
+    }
+
+    public parseItem(structure: MenuItemDefinition): MenuItem {
+        let item;
+
+        switch (structure.type) {
+            case 'slider':
+            case 'ribbonslider':
+                item = new Ribbonslider(structure.id, structure.direction, structure.text, structure.icon);
+                break;
+
+            case 'checkbox':
+                item = new Checkbox(structure.id, structure.direction, structure.text, structure.icon);
+                break;
+
+            case 'radiogroup':
+            case 'radio-group':
+                item = new RadioGroup(structure.id, structure.direction, structure.text, structure.icon);
+                break;
+
+            default:
+                item = new MenuItem(structure.id, structure.direction, structure.text, structure.icon);
+                break;
+        }
 
         if (typeof structure.data !== "undefined") {
             item.data = structure.data;
@@ -84,9 +89,13 @@ export default class MenuParser {
      * @param {string} itemId
      */
     private checkIds(itemId: string): void {
-        if (this._itemIds.has(itemId)) {
-            const item = <MenuItem>this._itemIds.get(itemId);
-            console.warn(`Menu Item ID '${itemId}' already in use by Menu Item '${item.itemId}' with Parent '${(<MenuItem>item.parent).itemId}'.`);
+        if (this.map.has(itemId)) {
+            const item = <MenuItem>this.map.get(itemId);
+            if (typeof item.parent === "undefined") {
+                console.warn(`Menu Item ID '${itemId}' already in use.`);
+            } else {
+                console.warn(`Menu Item ID '${itemId}' already in use by Menu Item with Parent '${(<MenuItem>item.parent).itemId}'.`);
+            }
         }
     }
 

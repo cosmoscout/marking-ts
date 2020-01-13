@@ -10,7 +10,14 @@ import ColorFactory from "../../utlis/color-factory";
 import {ClickState, DragState, Groups, ItemState, MenuItemEventType, SettingsGroup} from "../enums";
 import Animation, {AnimationGroup} from "../../utlis/animation";
 import {DEFAULT_SCALE, REFERENCE_POINT, ZERO_POINT as CENTER} from "../constants";
-import {ArcDefinition, DragDefinition, MenuData, MenuEventDefinition, MenuIdentifier} from "../interfaces";
+import {
+    ArcDefinition,
+    DragDefinition,
+    MenuData,
+    MenuEventDefinition,
+    MenuIdentifier,
+    MenuItemDefinition
+} from "../interfaces";
 import MenuEvent from "./menu-event";
 import Base from "./base";
 
@@ -1398,6 +1405,22 @@ export default class MenuItem extends Base implements MenuIdentifier {
         return `${this.itemId} (${Angle.toDeg(this.angle)}°) | Parent: ${parentId} | Root: ${this.isRoot} | Pos: ${this.position} | State: ${this.state} | Children: ${this.getChildren().length}`;
     }
 
+    /**
+     * Generates a JSON representation of the item and its children
+     */
+    public toJSON(): MenuItemDefinition {
+        return {
+            id: this.itemId,
+            text: this.textContent,
+            icon: (<string>this.iconName).substring(2).toLowerCase(),
+            direction: Angle.toDeg(this.angle),
+            children: this.getChildren().reduce((prev, cur): MenuItemDefinition[] => {
+                prev.push(cur.toJSON());
+
+                return prev;
+            }, <MenuItemDefinition[]>[]),
+        }
+    }
 
     /*
     *******************************************
