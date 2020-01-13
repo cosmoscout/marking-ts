@@ -1,7 +1,7 @@
 import MenuItem from "./menu-item";
 import {ZERO_POINT as CENTER, ZERO_POINT} from "../constants";
 import {ClickState, DragState, ItemState, MenuItemEventType, SettingsGroup} from "../enums";
-import {ArcDefinition, DragDefinition, SliderDefinition} from "../interfaces";
+import {ArcDefinition, DragDefinition, MenuItemDefinition, SliderDefinition} from "../interfaces";
 import ColorFactory from "../../utlis/color-factory";
 import throttle from 'lodash/throttle'
 import Animation from "../../utlis/animation";
@@ -271,6 +271,20 @@ export default class Ribbonslider extends MenuItem {
         });
     }
 
+    /**
+     * @inheritDoc
+     */
+    public toJSON(): MenuItemDefinition {
+        const json = super.toJSON();
+        json.type = this.TYPE;
+        json.data = this.configuration;
+
+        return json;
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected setupGeometry(): void {
         this._geometry = new paper.Path.Circle(CENTER, this.settings[SettingsGroup.GEOMETRY].size);
 
