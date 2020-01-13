@@ -278,6 +278,7 @@ export default class Ribbonslider extends MenuItem {
         const json = super.toJSON();
         json.type = this.TYPE;
         json.data = this.configuration;
+        delete json.children;
 
         return json;
     }

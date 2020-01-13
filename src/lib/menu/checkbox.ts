@@ -56,6 +56,7 @@ export default class Checkbox extends MenuItem {
         json.data = {
             selected: this.itemSelected
         };
+        delete json.children;
 
         return json;
     }
