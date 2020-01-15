@@ -393,6 +393,9 @@ export default class Ribbonslider extends MenuItem {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     protected selectionLogic(angle: number): void {
         if (this.dragging) {
             return;
@@ -447,7 +450,7 @@ export default class Ribbonslider extends MenuItem {
         this.text.visible = true;
         this.icon.opacity = 0;
 
-        if (this.state === ItemState.DOT) {
+        if (this.state === ItemState.DOT || this.state === ItemState.BACK_CHILD) {
             this.text.visible = false;
         }
     }
@@ -563,7 +566,7 @@ export default class Ribbonslider extends MenuItem {
 
         }
 
-        if (this.state === ItemState.DOT) {
+        if (this.state === ItemState.DOT || this.state === ItemState.BACK_CHILD) {
             (<paper.Path>this.childIndicator).visible = false;
         }
     }
