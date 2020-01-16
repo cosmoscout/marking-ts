@@ -729,7 +729,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      * Creates the icon path
      */
     protected setupIcon(): void {
-        if (typeof this.iconName === "undefined") {
+        if (typeof this.iconName === "undefined" || this.iconName === "") {
             this._icon = new paper.CompoundPath('');
         } else {
             // @ts-ignore
