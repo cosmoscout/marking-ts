@@ -56,39 +56,88 @@ class TastyBuilder {
         this._menu.init();
 
         const container = document.getElementById("output");
+
+        const schema = {
+            "$id": "action",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "title": "Action",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "unique item id",
+                    "minLength": 1,
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Item Text",
+                    "minLength": 1,
+                },
+                "icon": {
+                    "type": "string",
+                    "description": "Font Awesome Icon Name without 'fa'",
+                    "minLength": 1,
+                },
+                "direction":{
+                    "type": "integer",
+                    "description": "0 - 360°",
+                    "minimum": 0,
+                    "maximum": 360,
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "item"
+                    }
+                }
+            },
+            "required": [
+                "id", "text", "icon", "direction"
+            ]
+        };
+
+        const item = {
+            "title": "Action",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "unique item id",
+                    "minLength": 1,
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Item Text",
+                    "minLength": 1,
+                },
+                "icon": {
+                    "type": "string",
+                    "description": "Font Awesome Icon Name without 'fa'",
+                    "minLength": 1,
+                },
+                "direction":{
+                    "type": "integer",
+                    "description": "0 - 360°",
+                    "minimum": 0,
+                    "maximum": 360,
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "item"
+                    }
+                }
+            },
+            "required": [
+                "id", "text", "icon", "direction"
+            ]
+        };
+
         const options = {
             mode: 'tree',
-            schema: {
-                "$id": "action",
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "title": "Action",
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string",
-                        "description": "unique item id",
-                    },
-                    "text": {
-                        "type": "string",
-                        "description": "Item Text",
-                    },
-                    "icon": {
-                        "type": "string",
-                        "description": "Font Awesome Icon Name without 'fa'",
-                    },
-                    "direction":{
-                        "type": "integer",
-                        "description": "0 - 360°",
-                        "minimum": 0,
-                        "maximum": 360,
-                    },
-                    "children": {
-                        "type": "array",
-                    }
-                },
-                "required": [
-                    "id", "text", "icon", "direction"
-                ]
+            schema: schema,
+            schemaRefs: {
+                "item": item
             },
             enableSort: false,
             enableTransform: false,
