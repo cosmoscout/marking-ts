@@ -27,7 +27,15 @@ class TastyBuilder {
     /**
      * @type {Object}
      */
-    _structure;
+    _structure = {
+        id: 'root',
+        direction: 0,
+        text: 'Main Menu',
+        icon: 'bars',
+        children: []
+    };
+
+    _editor;
 
     constructor() {
         this._menuMap = new Map();
@@ -47,9 +55,109 @@ class TastyBuilder {
 
         this._menu.init();
 
-        this._typeToggler();
+        const container = document.getElementById("output");
+        const options = {
+            mode: 'tree',
+            schema: {
+                "$id": "action",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "title": "Action",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "unique item id",
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "Item Text",
+                    },
+                    "icon": {
+                        "type": "string",
+                        "description": "Font Awesome Icon Name without 'fa'",
+                    },
+                    "direction":{
+                        "type": "integer",
+                        "description": "0 - 360°",
+                        "minimum": 0,
+                        "maximum": 360,
+                    },
+                    "children": {
+                        "type": "array",
+                    }
+                },
+                "required": [
+                    "id", "text", "icon", "direction"
+                ]
+            },
+            enableSort: false,
+            enableTransform: false,
+            templates: [
+                {
+                    text: 'Action',
+                    title: 'Insert a Menu Item Action',
+                    className: 'jsoneditor-type-object',
+                    field: 'Menuitem',
+                    value: {
+                        'id': "",
+                        'text': "",
+                        'icon': "",
+                        'direction': 0,
+                        'children': [],
+                    }
+                },
+                {
+                    text: 'Checkbox',
+                    title: 'Insert a Checkbox',
+                    className: 'jsoneditor-type-object',
+                    field: 'Checkbox',
+                    value: {
+                        'id': "",
+                        'text': "",
+                        'icon': "",
+                        'direction': 0,
+                        'type': 'checkbox',
+                        'data': {
+                            'selected': false,
+                        }
+                    }
+                },
+                {
+                    text: 'Slider',
+                    title: 'Insert a Slider',
+                    className: 'jsoneditor-type-object',
+                    field: 'Slider',
+                    value: {
+                        'id': "",
+                        'text': "",
+                        'icon': "",
+                        'direction': 0,
+                        'type': 'slider',
+                        'data': {
+                            'min': -1,
+                            'max': 1,
+                            'initial': 0,
+                            'stepSize': 1,
+                            'stepDist': 100,
+                            'precision': 1
+                        }
+                    }
+                }
+            ]
+        };
+        this._editor = new JSONEditor(container, options);
+        this._editor.set(this._structure);
+        this._displayMenu();
 
-        document.getElementById('editor').addEventListener('submit', this._compile.bind(this));
+        this._editor.setName('RootItem');
+
+        /*this._typeToggler();*/
+
+        /*document.getElementById('editor').addEventListener('submit', this._compile.bind(this));*/
+        document.getElementById('update').addEventListener('click', () => {
+            this._structure = this._editor.get();
+            this._displayMenu();
+        });
     }
 
     _typeToggler() {
@@ -97,7 +205,8 @@ class TastyBuilder {
             this._structure = this._menuMap.get(this._rootId).toJSON();
         }
 
-        document.getElementById('output').innerText = JSON.stringify(this._structure, null, 2);
+        this._editor.update(this._structure);
+
         this._displayMenu();
     }
 
