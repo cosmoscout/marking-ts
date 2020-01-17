@@ -12,6 +12,11 @@ export default class MenuParser {
     private _itemIds: Map<string, MenuItem> = new Map<string, MenuItem>();
 
     /**
+     * Duplicate ID Set
+     */
+    private _duplicateIds: Set<string> = new Set<string>();
+
+    /**
      * Parses a JSON Structure to Menu Items
      *
      * @param {MenuItemDefinition} structure
@@ -83,6 +88,20 @@ export default class MenuParser {
     }
 
     /**
+     * Flag if parsed structure has duplicate ids
+     */
+    public hasDuplicateIds(): boolean {
+        return this._duplicateIds.size > 0;
+    }
+
+    /**
+     * Array with found duplicate ids
+     */
+    public get duplicateIds(): Array<string> {
+        return Array.from(this._duplicateIds.values());
+    }
+
+    /**
      * Checks if an item id is already in use by another item.
      * Writes a warning to the console
      *
@@ -90,12 +109,8 @@ export default class MenuParser {
      */
     private checkIds(itemId: string): void {
         if (this.map.has(itemId)) {
-            const item = <MenuItem>this.map.get(itemId);
-            if (typeof item.parent === "undefined") {
-                console.warn(`Menu Item ID '${itemId}' already in use.`);
-            } else {
-                console.warn(`Menu Item ID '${itemId}' already in use by Menu Item with Parent '${(<MenuItem>item.parent).itemId}'.`);
-            }
+            this._duplicateIds.add(itemId);
+            console.warn(`Menu Item ID '${itemId}' already in use.`);
         }
     }
 

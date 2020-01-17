@@ -5,26 +5,13 @@ class TastyBuilder {
     _canvasContainer;
 
     /**
-     * @type {tasty.parser}
-     */
-    _parser;
-
-    /**
      * @type {tasty.menu}
      */
     _menu;
 
     /**
-     * @type {Map<string, MenuItem>}
-     */
-    _menuMap;
-
-    /**
-     * @type {string}
-     */
-    _rootId;
-
-    /**
+     * Initial Menu Structure
+     *
      * @type {Object}
      */
     _structure = {
@@ -35,13 +22,70 @@ class TastyBuilder {
         children: []
     };
 
+    /**
+     * jsoneditor instance
+     */
     _editor;
 
-    constructor() {
-        this._menuMap = new Map();
-        this._parser = new tasty.parser();
-        this._canvasContainer = document.getElementById('canvas');
+    /**
+     * @type {HTMLElement}
+     */
+    _editorContainer;
 
+    /**
+     * Flag if json schema is valid for tasty.js
+     *
+     * @type {boolean}
+     * @private
+     */
+    _isValidJson = false;
+
+    /**
+     * Update BTN
+     *
+     * @type {HTMLElement}
+     */
+    _updateBtn;
+
+    constructor() {
+        this._canvasContainer = document.getElementById('canvas');
+        this._editorContainer = document.getElementById('output');
+
+        this._updateBtn = document.getElementById('update');
+
+        this._initMenu();
+        this._initEditor();
+        this._displayMenu();
+
+        this._updateBtn.addEventListener('click', () => {
+            const warn = document.getElementById('warn');
+            this._structure = this._editor.get();
+
+            const parser = new tasty.parser();
+            parser.parse(this._editor.get());
+            if (parser.hasDuplicateIds()) {
+                warn.textContent = `Duplicate IDs found: ${parser.duplicateIds.toString()}`;
+
+                return;
+            } else {
+                warn.textContent = '';
+            }
+
+            if (!this._isValidJson) {
+                warn.textContent = 'JSON is not valid.';
+                return;
+            }
+            document.getElementById('jsonOutput').value = JSON.stringify(this._editor.get());
+            this._displayMenu();
+        });
+    }
+
+    /**
+     * Initializes tasty.js
+     *
+     * @private
+     */
+    _initMenu() {
         this._menu = new tasty.menu('#canvas' /* The element to place the menu into */, {
             // Configuration object
             // These are the defaults
@@ -54,9 +98,14 @@ class TastyBuilder {
         });
 
         this._menu.init();
+    }
 
-        const container = document.getElementById("output");
-
+    /**
+     * Initializes the JSON Editor
+     *
+     * @private
+     */
+    _initEditor() {
         const schema = {
             "$id": "action",
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -78,7 +127,7 @@ class TastyBuilder {
                     "description": "Font Awesome Icon Name without 'fa'",
                     "minLength": 1,
                 },
-                "direction":{
+                "direction": {
                     "type": "integer",
                     "description": "0 - 360°",
                     "minimum": 0,
@@ -115,7 +164,7 @@ class TastyBuilder {
                     "description": "Font Awesome Icon Name without 'fa'",
                     "minLength": 1,
                 },
-                "direction":{
+                "direction": {
                     "type": "integer",
                     "description": "0 - 360°",
                     "minimum": 0,
@@ -192,122 +241,62 @@ class TastyBuilder {
                         }
                     }
                 }
-            ]
-        };
-        this._editor = new JSONEditor(container, options);
-        this._editor.set(this._structure);
-        this._displayMenu();
+            ],
+            autocomplete: {
+                filter: 'contain',
+                getOptions: (text, path) =>{
+                    if (path[path.length - 1] !== 'icon') {
+                        return null;
+                    }
 
-        this._editor.setName('RootItem');
+                    return faNames;
+                }
+            },
+            onEditable: (node) => {
+                return {
+                    field: false,
+                    value: true
+                };
+            },
+            onNodeName: (node) => {
+                if (node.path.length > 0 && node.path[0] === 'children' && node.type === 'object') {
+                    if (node.path[node.path.length - 1] === 'data') {
+                        return 'Settings'
+                    }
 
-        /*this._typeToggler();*/
+                    return 'MenuItem';
+                }
+            },
+            onCreateMenu: (items, node) => {
+                if (node.type === 'single' && (node.path.length === 1 || node.path[node.path.length - 1] === 'children')) {
+                    return [];
+                }
+                if (node.type === 'append' && node.path[node.path.length - 1] !== 'children') {
+                    return [];
+                }
 
-        /*document.getElementById('editor').addEventListener('submit', this._compile.bind(this));*/
-        document.getElementById('update').addEventListener('click', () => {
-            this._structure = this._editor.get();
-            this._displayMenu();
-        });
-    }
+                const filtered = items.filter((item) => {
+                    return item.text === 'Append';
+                });
 
-    _typeToggler() {
-        document.getElementById('type').addEventListener('change', (e) => {
-            document.getElementById('slider-settings').classList.remove('active');
-            document.getElementById('checkbox-settings').classList.remove('active');
+                filtered.forEach((entry, index, menu) => {
+                    menu[index].click = null;
+                    menu[index].submenu = menu[index].submenu.filter((item) => {
+                        return item.text === 'Action' || item.text === 'Slider' || item.text === 'Checkbox';
+                    });
+                });
 
-            switch (e.target.value) {
-                case 'checkbox':
-                    document.getElementById('checkbox-settings').classList.add('active');
-                    break;
-
-                case 'slider':
-                    document.getElementById('slider-settings').classList.add('active');
-                    break;
+                return filtered;
+            },
+            onValidationError: (errors) => {
+                this._isValidJson = errors.length === 0;
             }
-        });
-    }
-
-    /**
-     *
-     * @param {Event} event
-     * @private
-     */
-    _compile(event) {
-        event.preventDefault();
-        const item = this._loadFormData(event.target);
-
-        if (this._menuMap.has(item.id) || item.id === '') {
-            document.getElementById('itemId').classList.add('is-invalid');
-            return;
-        } else {
-            document.getElementById('itemId').classList.remove('is-invalid');
-        }
-
-        this._addParentOption(item);
-        this._menuMap.set(item.id, this._parser.parseItem(item));
-
-        if (typeof this._structure === "undefined") {
-            this._structure = item;
-            this._rootId = item.id;
-        } else {
-            this._menuMap.get(item.parent).addChild(this._menuMap.get(item.id));
-
-            this._structure = this._menuMap.get(this._rootId).toJSON();
-        }
-
-        this._editor.update(this._structure);
-
-        this._displayMenu();
-    }
-
-    /**
-     *
-     * @param form
-     * @return {{parent, icon: *, id: *, text: *, type, direction: *}}
-     * @private
-     */
-    _loadFormData(form) {
-        const item = {
-            id: form.itemId.value,
-            text: form.text.value,
-            icon: form.icon.value,
-            direction: form.direction.value,
-            type: form.type.value,
-            parent: form.parent.value,
         };
 
-        if (item.type === 'checkbox') {
-            item.data = {
-                selected: form.checkbox.checked === true,
-            };
-        } else if (item.type === 'slider') {
-            item.data = {
-                min: Number(form['slider-min'].value),
-                max: Number(form['slider-max'].value),
-                initial: Number(form['slider-initial'].value),
-                precision: Number(form['slider-precision'].value),
-                stepDist: Number(form['slider-step-dist'].value),
-                stepSize: Number(form['slider-step-size'].value),
-            };
-        }
-
-        return item;
-    }
-
-    /**
-     * Adds the parent as an option
-     * @param item
-     * @private
-     */
-    _addParentOption(item) {
-        if (this._menuMap.has(item.id)) {
-            return;
-        }
-
-        const option = document.createElement('option');
-        option.value = item.id;
-        option.innerText = `${item.text} - ${item.id}`;
-
-        document.getElementById('parent').appendChild(option);
+        this._editor = new JSONEditor(this._editorContainer, options);
+        this._editor.set(this._structure);
+        this._editor.expandAll();
+        this._editor.setName('RootItem');
     }
 
     /**
