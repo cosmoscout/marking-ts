@@ -220,9 +220,6 @@ class TastyBuilder {
                             "minimum": 0.01,
                         }
                     },
-                    "required": [
-                        "min", "max", "initial", "stepSize", "stepDist"
-                    ]
                 }
             },
             "required": [
