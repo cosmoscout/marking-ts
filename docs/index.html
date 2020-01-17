@@ -37,17 +37,21 @@
             pointer-events: none;
         }
 
-        tr.jsoneditor-expandable + tr.jsoneditor-expandable td .jsoneditor-contextmenu-button,
-        tr.jsoneditor-append td .jsoneditor-contextmenu-button {
+        tr.jsoneditor-append td .jsoneditor-contextmenu-button,
+        tr.showButton td .jsoneditor-contextmenu-button {
             opacity: 1;
             pointer-events: all;
-            background-position: unset;
+            background-position: unset !important;
         }
 
-        tr.jsoneditor-expandable + tr.jsoneditor-expandable td .jsoneditor-contextmenu-button:hover,
-        tr.jsoneditor-append td .jsoneditor-contextmenu-button:hover {
+        tr.showButton td .jsoneditor-contextmenu-button,
+        tr.showButton td .jsoneditor-contextmenu-button:focus,
+        tr.showButton td .jsoneditor-contextmenu-button:hover {
             filter: invert(0.75);
-            background-position: unset;
+        }
+
+        .jsoneditor-tree-inner > table {
+            margin-left: -20px;
         }
     </style>
 </head>
@@ -58,10 +62,12 @@
             <h1 class="pt-3">Tasty.js Builder</h1>
             <hr>
             <div class="alert alert-warning" id="warn"></div>
-            <div id="output" class="pb-3"></div>
-            <button class="btn btn-outline-primary" id="update">Update</button>
+            <div id="output" class="h-50"></div>
+            <small class="text-muted d-block">Click the + to add/remove items. Hover over keys for further details.</small>
+            <button class="btn btn-outline-primary mt-3" id="update">Build</button>
             <hr>
-            <textarea id="jsonOutput" readonly class="form-control pre-scrollable w-100"></textarea>
+            <textarea id="jsonOutput" class="form-control pre-scrollable w-100"></textarea>
+            <button class="btn btn-outline-secondary btn-sm mt-3" id="load">Load from json</button>
         </div>
 
         <div class="col-9" id="canvas"></div>
