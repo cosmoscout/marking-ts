@@ -65,7 +65,9 @@ module.exports = {
                 amd: 'lodash',
                 root: '_'
             },
-            paper: 'paper'
+            paper: 'paper',
+            fontawesome: 'fontawesome',
+            '@fortawesome/free-solid-svg-icons': '@fortawesome/free-solid-svg-icons',
         },
     ]
 };

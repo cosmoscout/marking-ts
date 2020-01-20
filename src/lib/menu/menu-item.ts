@@ -3,9 +3,6 @@ import {distinctUntilChanged, map} from "rxjs/operators";
 import Angle from '../../utlis/angle';
 import Arc from "../../utlis/arc";
 import Settings from "../settings";
-import * as fontawesome from '@fortawesome/free-solid-svg-icons';
-import {IconDefinition, IconName} from '@fortawesome/fontawesome-common-types';
-import {camelCase, upperFirst} from 'lodash';
 import ColorFactory from "../../utlis/color-factory";
 import {ClickState, DragState, Groups, ItemState, MenuItemEventType, SettingsGroup} from "../enums";
 import Animation, {AnimationGroup} from "../../utlis/animation";
@@ -507,6 +504,10 @@ export default class MenuItem extends Base implements MenuIdentifier {
                 this.arcGroup.visible = true;
                 break;
 
+            case ItemState.CHILD:
+                this.text.visible = this.iconName === '';
+                break;
+
             case ItemState.DOT:
                 this.icon.visible = false;
                 break;
@@ -551,7 +552,7 @@ export default class MenuItem extends Base implements MenuIdentifier {
      */
     protected set iconName(icon: string | undefined) {
         if (icon !== undefined) {
-            this._iconName = `fa${upperFirst(camelCase(icon))}`;
+            this._iconName = icon;
         }
     }
 
@@ -733,7 +734,17 @@ export default class MenuItem extends Base implements MenuIdentifier {
             this._icon = new paper.CompoundPath('');
         } else {
             // @ts-ignore
-            const icon: IconDefinition = fontawesome[<IconName>this._iconName];
+            if (typeof window.FontAwesome === "undefined") {
+                this._icon = new paper.CompoundPath('');
+                console.error('FontAwesome not loaded.');
+                return;
+            }
+
+            // @ts-ignore
+            const icon = window.FontAwesome.icon({
+                prefix: 'fas',
+                iconName: this.iconName
+            });
 
             if (typeof icon === "undefined") {
                 console.error(`Icon '${this.iconName}' does not exist.`);
