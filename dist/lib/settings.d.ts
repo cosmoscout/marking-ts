@@ -1,5 +1,5 @@
-import { SettingsGroup } from "./enums";
-import { SettingsDefinition } from "./interfaces";
+import { SettingsGroup } from './enums';
+import { SettingsDefinition } from './interfaces/settings-definition';
 export default class Settings implements SettingsDefinition {
     private readonly _defaultSettings;
     private readonly _settings;

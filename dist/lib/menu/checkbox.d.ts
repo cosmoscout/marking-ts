@@ -1,5 +1,5 @@
-import MenuItem from "./menu-item";
-import { MenuItemDefinition } from "../interfaces";
+import MenuItem from './menu-item';
+import { MenuItemDefinition } from '../interfaces/menu-item-definition';
 export default class Checkbox extends MenuItem {
     readonly TYPE = "checkbox";
     protected itemSelected: boolean;

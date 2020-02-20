@@ -1,6 +1,8 @@
-import MenuItem from "./menu-item";
-import { ClickState } from "../enums";
-import { DragDefinition, MenuItemDefinition, SliderDefinition } from "../interfaces";
+import MenuItem from './menu-item';
+import { ClickState } from '../enums';
+import { SliderDefinition } from '../interfaces/slider-definition';
+import { MenuItemDefinition } from '../interfaces/menu-item-definition';
+import { DragDefinition } from '../interfaces/drag-definition';
 export default class Ribbonslider extends MenuItem {
     readonly TYPE = "ribbonslider";
     private _ribbonGroup;

@@ -1,9 +1,14 @@
-import { Observable, Subject, Subscription } from "rxjs";
-import Settings from "../settings";
-import { ClickState, ItemState, MenuItemEventType } from "../enums";
-import { AnimationGroup } from "../../utlis/animation";
-import { ArcDefinition, DragDefinition, MenuData, MenuEventDefinition, MenuIdentifier, MenuItemDefinition } from "../interfaces";
-import Base from "./base";
+import { Observable, Subject, Subscription } from 'rxjs';
+import Settings from '../settings';
+import { ClickState, ItemState, MenuItemEventType } from '../enums';
+import { AnimationGroup } from '../../utlis/animation';
+import Base from './base';
+import { MenuIdentifier } from '../interfaces/menu-identifier';
+import { ArcDefinition } from '../interfaces/arc-definition';
+import { MenuEventDefinition } from '../interfaces/menu-event-definition';
+import { MenuData } from '../interfaces/menu-data';
+import { DragDefinition } from '../interfaces/drag-definition';
+import { MenuItemDefinition } from '../interfaces/menu-item-definition';
 export default class MenuItem extends Base implements MenuIdentifier {
     protected static readonly ICON_BG_OPACITY: number;
     protected static readonly TEXT_OVERFLOW_SCALE: number;

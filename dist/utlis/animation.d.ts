@@ -1,4 +1,5 @@
-import { AnimationDefinition, AnimationOptions } from "../lib/interfaces";
+import { AnimationOptions } from '../lib/interfaces/animation-options';
+import { AnimationDefinition } from '../lib/interfaces/animation-definition';
 export declare abstract class IAnimation {
     abstract onStop$(callback: Function): void;
     abstract onFinish$(callback: Function): void;

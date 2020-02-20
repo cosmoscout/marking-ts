@@ -1,5 +1,6 @@
-import { MenuItemEventType } from "../enums";
-import { MenuEventDefinition, MenuIdentifier } from "../interfaces";
+import { MenuItemEventType } from '../enums';
+import { MenuEventDefinition } from '../interfaces/menu-event-definition';
+import { MenuIdentifier } from '../interfaces/menu-identifier';
 export default class MenuEvent implements MenuEventDefinition {
     readonly type: MenuItemEventType;
     readonly source: MenuIdentifier;

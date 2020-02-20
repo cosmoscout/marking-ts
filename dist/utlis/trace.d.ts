@@ -1,5 +1,5 @@
-import { Observable } from "rxjs";
-import { SettingsDefinition } from "../lib/interfaces";
+import { Observable } from 'rxjs';
+import { SettingsDefinition } from '../lib/interfaces/settings-definition';
 export default class Trace {
     private static readonly THRESHOLD;
     private readonly MINIMUM_DISTANCE;

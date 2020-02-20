@@ -1,8 +1,13 @@
 import { Observable, Subject } from 'rxjs';
-import MenuItem from "./menu-item";
-import { ClickState } from "../enums";
-import Trace from "../../utlis/trace";
-import { DragDefinition, Input, MenuData, MenuEventDefinition, MenuItemDefinition, SettingsDefinition } from "../interfaces";
+import MenuItem from './menu-item';
+import { ClickState } from '../enums';
+import Trace from '../../utlis/trace';
+import { MenuData } from '../interfaces/menu-data';
+import { Input } from '../interfaces/input';
+import { DragDefinition } from '../interfaces/drag-definition';
+import { SettingsDefinition } from '../interfaces/settings-definition';
+import { MenuEventDefinition } from '../interfaces/menu-event-definition';
+import { MenuItemDefinition } from '../interfaces/menu-item-definition';
 export default class Menu implements MenuData {
     readonly inputActivation$: Subject<Input>;
     readonly inputDeactivation$: Subject<Input>;
@@ -29,7 +34,10 @@ export default class Menu implements MenuData {
     get markingMode(): boolean;
     get canvas(): HTMLCanvasElement;
     init(): void;
-    display(position?: paper.Point | null): void;
+    display(position?: paper.Point | {
+        x: number;
+        y: number;
+    } | null): void;
     hide(): void;
     setStructure(structure: MenuItem): void;
     resize(): void;

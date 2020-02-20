@@ -94,7 +94,7 @@ class TastyBuilder {
      * @private
      */
     _initMenu() {
-        this._menu = new tasty.menu('#canvas' /* The element to place the menu into */, {
+        this._menu = new tasty.Menu('#canvas' /* The element to place the menu into */, {
             // Configuration object
             // These are the defaults
             main: {
@@ -395,7 +395,7 @@ class TastyBuilder {
     _checkStruct(struct) {
         const warn = document.getElementById('warn');
 
-        const parser = new tasty.parser();
+        const parser = new tasty.Parser();
         parser.parse(struct);
         if (parser.hasDuplicateIds()) {
             warn.textContent = `Duplicate IDs found: ${parser.duplicateIds.toString()}`;
@@ -414,7 +414,7 @@ class TastyBuilder {
      */
     _displayMenu() {
         this._menu._scope.project.clear();
-        this._menu.setStructure((new tasty.parser()).parse(this._structure));
+        this._menu.setStructure((new tasty.Parser()).parse(this._structure));
         this._menu.display({
             x: this._canvasContainer.offsetWidth / 2,
             y: this._canvasContainer.offsetHeight / 2
