@@ -279,7 +279,7 @@ export default class Menu implements MenuData {
      * @throws {Error} If menu hast not been initialized
      * @see {init}
      */
-    public display(position: paper.Point | null = null): void {
+    public display(position: paper.Point | {x: number, y: number} | null = null): void {
         if (this._rootItem === undefined) {
             throw new Error(`Menu not initialized.`);
         }
@@ -296,7 +296,7 @@ export default class Menu implements MenuData {
             if (position === null) {
                 this._rootItem.position = this.inputPosition;
             } else {
-                this._rootItem.position = position;
+                this._rootItem.position = <paper.Point>position;
             }
         }
     }
