@@ -1,6 +1,6 @@
 {
   "name": "tasty.js",
-  "version": "1.0.6a",
+  "version": "1.0.7",
   "description": "A Pie- and Marking-Menu Framework written in TypeScript.",
   "scripts": {
     "type-check": "tsc --noEmit",
@@ -8,6 +8,8 @@
     "build:types": "tsc --emitDeclarationOnly",
     "build:js": "webpack --mode=production",
     "build": "npm run build:types && npm run build:js",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx ./src",
+    "lint:fix": "eslint --ext .js,.jsx,.ts,.tsx ./src --fix",
     "start:dev": "webpack-dev-server"
   },
   "author": {
@@ -15,33 +17,39 @@
     "email": "hannes.kruse@dlr.de"
   },
   "main": "dist/tasty.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.7.7",
-    "@babel/plugin-proposal-class-properties": "^7.7.4",
-    "@babel/plugin-proposal-object-rest-spread": "^7.7.7",
-    "@babel/preset-env": "^7.7.7",
-    "@babel/preset-typescript": "^7.7.7",
-    "@fortawesome/free-solid-svg-icons": "^5.12.0",
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/preset-typescript": "^7.8.3",
+    "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "@types/lodash": "^4.14.149",
-    "@typescript-eslint/eslint-plugin": "^2.15.0",
-    "@typescript-eslint/parser": "^2.15.0",
+    "@typescript-eslint/eslint-plugin": "^2.20.0",
+    "@typescript-eslint/parser": "^2.20.0",
     "babel-loader": "^8.0.6",
     "eslint": "^6.8.0",
-    "fork-ts-checker-webpack-plugin": "^3.1.1",
+    "eslint-config-airbnb-typescript": "^7.0.0",
+    "eslint-plugin-import": "^2.20.1",
+    "fork-ts-checker-webpack-plugin": "^4.0.4",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
-    "lodash": "^4.17.15",
-    "paper": "^0.12.4",
-    "rxjs": "^6.5.4",
-    "typescript": "^3.7.4",
-    "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.10.1"
+    "typescript": "^3.7.5",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3"
   },
   "resolutions": {
     "terser": "3.14.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "paper": "^0.12.4",
+    "rxjs": "^6.5.4"
+  },
+  "files": [
+    "dist"
+  ]
 }

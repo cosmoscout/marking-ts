@@ -1,4 +1,4 @@
-import {Point} from 'paper';
+import { Point } from 'paper';
 
 export const ZERO_POINT = new Point(0, 0);
 export const REFERENCE_POINT = new Point(0, -1);

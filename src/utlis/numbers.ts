@@ -4,13 +4,13 @@
  * @param value
  */
 export function precision(value: number): number {
-    let e = 1;
+  let e = 1;
 
-    while (Math.round(value * e) / e !== value) {
-        e *= 10
-    }
+  while (Math.round(value * e) / e !== value) {
+    e *= 10;
+  }
 
-    return Math.log(e) / Math.LN10;
+  return Math.log(e) / Math.LN10;
 }
 
 /**
@@ -21,16 +21,15 @@ export function precision(value: number): number {
  * @param scale
  */
 export function roundNumber(num: number, scale: number): number {
-    if (("" + num).includes("e")) {
-        let arr = ("" + num).split("e");
-        let sig = "";
+  if ((`${num}`).includes('e')) {
+    const arr = (`${num}`).split('e');
+    let sig = '';
 
-        if (+arr[1] + scale > 0) {
-            sig = "+";
-        }
-
-        return +(Math.round(Number(+arr[0] + "e" + sig + (+arr[1] + scale))) + "e-" + scale);
-    } else {
-        return +(Math.round(Number(num + "e+" + scale)) + "e-" + scale);
+    if (+arr[1] + scale > 0) {
+      sig = '+';
     }
+
+    return +(`${Math.round(Number(`${+arr[0]}e${sig}${+arr[1] + scale}`))}e-${scale}`);
+  }
+  return +(`${Math.round(Number(`${num}e+${scale}`))}e-${scale}`);
 }
