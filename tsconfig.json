@@ -9,15 +9,18 @@
     "esModuleInterop": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
-    "declarationDir": "dist/types",
     "declaration": true,
-    "target": "es2015",
-    "module": "es2015",
+    "declarationDir": "dist",
+    "outDir": "dist",
+    "target": "es5",
+    "lib": ["es2017", "es7", "es6", "dom"],
+    "module": "commonjs",
     "strict": true,
     "alwaysStrict": true,
     "moduleResolution": "node",
     "strictNullChecks": true,
-    "removeComments": true
+    "removeComments": true,
+    "allowJs": false
   },
   "include": [
     "src/**/*"
