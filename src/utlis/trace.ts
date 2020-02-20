@@ -1,4 +1,5 @@
 import {merge, Observable, Subject} from "rxjs";
+import * as paper from 'paper';
 import {ZERO_POINT} from "../lib/constants";
 import {SettingsDefinition} from "../lib/interfaces";
 import {SettingsGroup} from "../lib/enums";
