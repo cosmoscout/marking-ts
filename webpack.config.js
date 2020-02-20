@@ -1,10 +1,8 @@
 const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const HTMLWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     entry: path.resolve(__dirname, 'src'),
-
     output: {
         filename: 'tasty.js',
         path: path.resolve(__dirname, 'dist'),
@@ -13,11 +11,9 @@ module.exports = {
         umdNamedDefine: true,
         globalObject: 'this'
     },
-
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json']
     },
-
     module: {
         rules: [
             {
@@ -31,31 +27,8 @@ module.exports = {
             }
         ]
     },
-
-/*
-    optimization: {
-        splitChunks: {
-            cacheGroups: {
-                default: false,
-                vendors: false,
-                // vendor chunk
-                vendor: {
-                    // sync + async chunks
-                    chunks: 'all',
-                    // import file path containing node_modules
-                    test: /node_modules/
-                }
-            }
-        }
-    },
-*/
-
     plugins: [
         new ForkTsCheckerWebpackPlugin(),
-/*        new HTMLWebpackPlugin({
-            title: 'tasty.js',
-            template: path.resolve(__dirname, 'public/index.html')
-        })*/
     ],
     externals: [
         {
