@@ -1,4 +1,3 @@
-
 /**
  * Slider configuration data
  * min: Min value
