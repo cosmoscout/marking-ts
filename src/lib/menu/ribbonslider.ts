@@ -663,7 +663,6 @@ export default class Ribbonslider extends MenuItem {
       this.moveRibbonToValuePosition(this.value, true);
     };
 
-
     for (let i = 0; i <= this.getRibbonLength() / (this.configuration.stepDist / 2); i += 1) {
       const position = new paper.Point(
         i * (this.configuration.stepDist / 2) + this.settings[SettingsGroup.RIBBONSLIDER].gradientLength / 2,
@@ -782,7 +781,6 @@ export default class Ribbonslider extends MenuItem {
 
     return mask;
   }
-
 
   /**
    * Calculate the ribbon length
