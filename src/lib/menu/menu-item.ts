@@ -495,7 +495,6 @@ export default class MenuItem extends Base implements MenuIdentifier {
       this.reset();
     }
 
-
     if (this.state !== ItemState.SUBMENU) {
       this.connector.opacity = 1;
       this.geometry.opacity = 1;

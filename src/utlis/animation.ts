@@ -61,7 +61,6 @@ export abstract class IAnimation {
   public abstract stop(goToEnd: boolean): void;
 }
 
-
 /**
  * Class representing an animation
  *

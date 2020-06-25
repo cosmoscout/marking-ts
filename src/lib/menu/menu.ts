@@ -66,7 +66,6 @@ export default class Menu implements MenuData {
    */
   private readonly _dragging$: Subject<DragDefinition>;
 
-
   /**
    * HTML Element selector passed to `document.querySelector`
    *
@@ -163,7 +162,6 @@ export default class Menu implements MenuData {
     this._click$ = new Subject<ClickState>();
   }
 
-
   /**
    * @see {_inputPosition}
    * @return {Observable<paper.Point>}
@@ -239,7 +237,6 @@ export default class Menu implements MenuData {
 
     return this._canvas;
   }
-
 
   /**
    * Initializes the menu, sets up the canvas and scope
@@ -405,7 +402,6 @@ export default class Menu implements MenuData {
     // @ts-ignore
     (<paper.Project> this._scope.project).currentStyle = this._settings.projectStyle;
   }
-
 
   /**
    * Sets up needed Observable data mapping and subscribing
